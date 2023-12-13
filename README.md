@@ -19,3 +19,8 @@ exists mainly in game and UI programming.
 ### Components
 
 ### System
+
+## Example
+
+## License
+This program is licensed under the MIT license.
