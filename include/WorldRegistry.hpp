@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include "Archetype.hpp"
 #include "Hasher.hpp"
+#include "System.hpp"
 
 using SystemId = uint64_t;
 
@@ -34,7 +35,7 @@ class WorldRegistry {
       }
 
       ArchetypeRecord &a_record = archetype_map[archetype.id];
-      return std::make_optional(archetype.components[a_record.column][record.row]);
+      return std::make_optional(archetype.components[a_record][record.row]);
     }
 
     /*
@@ -42,6 +43,12 @@ class WorldRegistry {
      * @param component_list Passes the initial components of the entity
      */
     EntityId create_entity(Type component_list);
+
+    /*
+     * @brief Deletes and entity
+     * @param entity The id of the entity
+     */
+    void delete_entity(EntityId entity);
 
     /*
      * @brief Adds a certain component to an entity
