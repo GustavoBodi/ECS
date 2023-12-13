@@ -6,7 +6,7 @@
 struct ArchetypeEdge;
 
 // Colunas do banco de dados Componentes (Verticalmente)
-class Column {
+class Column { // Equivalente a ecs_type_t
   public:
   // Overload do operador para poder selecionar a linha (Arquetipo)
   void* operator[](std::size_t index) {
@@ -24,7 +24,7 @@ class Column {
 // arquetipo e seu id
 struct Archetype {
   ArchetypeId id;
-  Type type;
+  ArchetypeSignature type;
   std::vector<Column> components;
   std::unordered_map<ComponentId, ArchetypeEdge> edges;
 };
@@ -36,7 +36,7 @@ struct ArchetypeEdge {
 
 class Record {
   public:
-    Archetype & archetype;
+    Archetype &archetype;
     std::size_t row;
 };
 

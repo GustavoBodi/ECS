@@ -16,33 +16,20 @@ class WorldRegistry {
     /*
      * @brief Contructor to the world registry, will create its own archetype graph
      */
-    WorldRegistry(Archetype &root)
-        : entity_index(), component_index(), system_index(), archetype_index(),
-          root{root}, next_id{0} {}
+    WorldRegistry(Archetype &root);
 
     /*
      * @brief Return the component from the Registry
      * @param entity The of the entity to be searched
      * @param component The id of the component to be searched
      */
-    std::optional<void*> get_component(EntityId entity, ComponentId component) {
-      Record &record = entity_index[entity];
-      Archetype &archetype = record.archetype;
-      ArchetypeMap archetype_map = component_index[component];
-
-      if (archetype_map.count(archetype.id) == 0) {
-        return std::nullopt;
-      }
-
-      ArchetypeRecord &a_record = archetype_map[archetype.id];
-      return std::make_optional(archetype.components[a_record][record.row]);
-    }
+    std::optional<void*> get_component(EntityId entity, ComponentId component);
 
     /*
      * @brief Creates a new entity
      * @param component_list Passes the initial components of the entity
      */
-    EntityId create_entity(Type component_list);
+    EntityId create_entity(ArchetypeSignature component_list);
 
     /*
      * @brief Deletes and entity
@@ -81,7 +68,7 @@ class WorldRegistry {
     /*
      * @brief Relação entre uma lista de componentes e um arquétipo
      */
-    std::unordered_map<Type, Archetype, Hasher<ComponentId>> archetype_index;
+    std::unordered_map<ArchetypeSignature, Archetype, Hasher<ComponentId>> archetype_index;
     /*
      * @brief Arquétipo raiz do grafo
      */
