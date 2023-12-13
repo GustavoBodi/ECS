@@ -42,14 +42,14 @@ class WorldRegistry {
      * @param entity EntityId that will have a component added
      * @param component Component to be added
      */
-    std::optional<Archetype&> add_component(EntityId entity, ComponentId component);
+    std::optional<const Archetype*> add_component(EntityId entity, ComponentId component);
 
     /*
      * @brief Removes a component from an entity
      * @param entity EntityId that will have its component removed
      * @param component The representation of the component to be removed
      */
-    std::optional<Archetype&> remove_component(EntityId entity, ComponentId component);
+    std::optional<const Archetype*> remove_component(EntityId entity, ComponentId component);
 
   private:
     /*
@@ -64,7 +64,7 @@ class WorldRegistry {
     /*
      * @brief Relaciona um id de sistema com o sistema
      */
-    std::unordered_map<SystemId, System> system_index;
+    std::unordered_map<SystemId, System&> system_index;
     /*
      * @brief Relação entre uma lista de componentes e um arquétipo
      */

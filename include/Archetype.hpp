@@ -19,7 +19,6 @@ class Column { // Equivalente a ecs_type_t
     std::size_t count; // Número de elementos
 };
 
-
 // Estrutura de um Arquétipo linha do banco de dados
 // arquetipo e seu id
 struct Archetype {
@@ -30,13 +29,12 @@ struct Archetype {
 };
 
 struct ArchetypeEdge {
-  Archetype &add;
-  Archetype &remove;
+  Archetype *add;
+  Archetype *remove;
 };
 
-class Record {
-  public:
-    Archetype &archetype;
-    std::size_t row;
+struct Record {
+  Archetype *archetype;
+  std::size_t row;
 };
 

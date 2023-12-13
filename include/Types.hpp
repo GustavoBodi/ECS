@@ -21,4 +21,3 @@ using ArchetypeRecord = std::size_t;
 // Finding components in archetypes in O(1)
 using ArchetypeMap = std::unordered_map<ArchetypeId, ArchetypeRecord>;
 
-

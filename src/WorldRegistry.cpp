@@ -9,15 +9,15 @@ WorldRegistry::WorldRegistry(Archetype &root)
 
 std::optional<void*> WorldRegistry::get_component(EntityId entity, ComponentId component) {
   Record &record = entity_index[entity];
-  Archetype &archetype = record.archetype;
+  Archetype *archetype = record.archetype;
   ArchetypeMap archetype_map = component_index[component];
 
-  if (archetype_map.count(archetype.id) == 0) {
+  if (archetype_map.count(archetype->id) == 0) {
     return std::nullopt;
   }
 
-  ArchetypeRecord &a_record = archetype_map[archetype.id];
-  return std::make_optional(archetype.components[a_record][record.row]);
+  ArchetypeRecord &a_record = archetype_map[archetype->id];
+  return std::make_optional(archetype->components[a_record][record.row]);
 }
 
 EntityId WorldRegistry::create_entity(ArchetypeSignature component_list)
@@ -30,10 +30,10 @@ void WorldRegistry::delete_entity(EntityId entity)
 {
 }
 
-std::optional<Archetype&> WorldRegistry::add_component(EntityId entity, ComponentId component)
+std::optional<const Archetype*> WorldRegistry::add_component(EntityId entity, ComponentId component)
 {
 }
 
-std::optional<Archetype&> WorldRegistry::remove_component(EntityId entity, ComponentId component)
+std::optional<const Archetype*> WorldRegistry::remove_component(EntityId entity, ComponentId component)
 {
 }

@@ -7,9 +7,10 @@ class System {
   /*
    * @brief Runs the system for a tick
    */
-  virtual void run_system();
-  virtual System& operator=(const System&) = delete;
-  virtual System& operator=(System&&) = delete;
-  virtual ~System() {};
+  protected:
+    virtual void run_system();
+    virtual System& operator=(const System&) = delete;
+    virtual System& operator=(System&&) = delete;
+    virtual ~System() {};
 };
 
