@@ -1,5 +1,4 @@
 #pragma once
-
 #include <optional>
 #include <unordered_map>
 #include "Archetype.hpp"
@@ -19,6 +18,27 @@ class WorldRegistry {
     WorldRegistry(Archetype &root);
 
     /*
+     * @brief Registers a new component in the registry
+     * @param component_size The size of the new component
+     */
+    constexpr ComponentId register_component(const std::size_t component_size);
+    
+    /*
+     * @brief Registers a system in the registry
+     * @param system Lambda function that represents a system
+     * @param tick_rate Every something ticks a system will run
+     * when the registry itself ticks
+     */
+    template <typename Func, typename=std::enable_if_t<std::is_function_v<Func>>, typename ...T>
+    const SystemId register_system(Func system, T... dependencies);
+    
+    /*
+     * @brief Disables a system tempararily
+     * @param system The id of the system to be disabled
+     */
+    void disable_system(const SystemId system);
+
+    /*
      * @brief Return the component from the Registry
      * @param entity The of the entity to be searched
      * @param component The id of the component to be searched
@@ -29,7 +49,7 @@ class WorldRegistry {
      * @brief Creates a new entity
      * @param component_list Passes the initial components of the entity
      */
-    EntityId create_entity(ArchetypeSignature component_list);
+    EntityId create_entity(ArchetypeSignature &component_list);
 
     /*
      * @brief Deletes and entity
@@ -51,30 +71,40 @@ class WorldRegistry {
      */
     std::optional<const Archetype*> remove_component(EntityId entity, ComponentId component);
 
+    /*
+     * @brief Ticks the entire registry
+     */
+    void tick();
+
   private:
     /*
-     * @brief Relaciona o Id de entidade com um arquétipo e uma linha
+     * @brief Relation between and entity id with an archetype and a line
      */
     std::unordered_map<EntityId, Record> entity_index;
+
     /*
-     * @brief Relaciona o Id de componente com uma relação de arquétipo para coluna no
-     * banco de dados
+     * @brief Relation of a component Id with a relation of an archetype for the column
+     * in the database
      */
     std::unordered_map<ComponentId, ArchetypeMap> component_index;
+
     /*
-     * @brief Relaciona um id de sistema com o sistema
+     * @brief Relation between a system id and a system
      */
     std::unordered_map<SystemId, System&> system_index;
+
     /*
-     * @brief Relação entre uma lista de componentes e um arquétipo
+     * @brief Relationship between a list of components and the archetypes
      */
     std::unordered_map<ArchetypeSignature, Archetype, Hasher<ComponentId>> archetype_index;
+
     /*
-     * @brief Arquétipo raiz do grafo
+     * @brief Root archetype of the graph
      */
     Archetype &root;
+
     /*
-     * @brief Próximo id de entidade
+     * @brief Next entity id
      */
     EntityId next_id;
 };

@@ -5,22 +5,28 @@
 
 struct ArchetypeEdge;
 
-// Colunas do banco de dados Componentes (Verticalmente)
-class Column { // Equivalente a ecs_type_t
+/*
+ * @brief Colunas do banco de dados que representa os Componentes (Verticalmente)
+ */
+class Column { // Equivalent to an ecs_type_t
   public:
-  // Overload do operador para poder selecionar a linha (Arquetipo)
+  /*
+   * @brief Overload of the indexing operator for selecting a line (Archetype)
+   */
   void* operator[](std::size_t index) {
     return static_cast<void*>(static_cast<char*>(elements) + index * element_size);
   }
 
   private:
-    void *elements; // Buffer com os Components
-    std::size_t element_size; // Tamanho de um elemento
-    std::size_t count; // Número de elementos
+    void *elements;           // Buffer with the components
+    std::size_t element_size; // Size of an element
+    std::size_t count;        // Number of elements
 };
 
-// Estrutura de um Arquétipo linha do banco de dados
-// arquetipo e seu id
+/* 
+ * @brief Structure of an Archetype in a line of the database
+ * with the data and its id
+ */
 struct Archetype {
   ArchetypeId id;
   ArchetypeSignature type;
@@ -28,11 +34,17 @@ struct Archetype {
   std::unordered_map<ComponentId, ArchetypeEdge> edges;
 };
 
+/*
+ * @brief Connections to other Archetypes
+ */
 struct ArchetypeEdge {
   Archetype *add;
   Archetype *remove;
 };
 
+/*
+ * @brief The Record is an archetype relation with its row on the database
+ */
 struct Record {
   Archetype *archetype;
   std::size_t row;

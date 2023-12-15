@@ -20,7 +20,7 @@ std::optional<void*> WorldRegistry::get_component(EntityId entity, ComponentId c
   return std::make_optional(archetype->components[a_record][record.row]);
 }
 
-EntityId WorldRegistry::create_entity(ArchetypeSignature component_list)
+EntityId WorldRegistry::create_entity(ArchetypeSignature &component_list)
 {
   EntityId new_entity = next_id++;
   return new_entity;
