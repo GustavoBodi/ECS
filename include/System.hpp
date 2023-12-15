@@ -1,16 +1,10 @@
-#pragma once
 
-/*
- * @brief An interface that represent the inner workings of a system
- */
 class System {
-  /*
-   * @brief Runs the system for a tick
-   */
-  protected:
-    virtual void run_system();
-    virtual System& operator=(const System&) = delete;
-    virtual System& operator=(System&&) = delete;
-    virtual ~System() {};
+public:
+  System(const System &) = default;
+  System(System &&) = delete;
+  virtual System &operator=(const System &) = delete;
+  virtual System &operator=(System &&) = delete;
+  virtual void run() = 0;
+  virtual ~System();
 };
-

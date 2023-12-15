@@ -13,6 +13,7 @@ enable_testing()
 set(PROJECT_SOURCE_DIR "src")
 set(PROJECT_INCLUDE_DIR "include")
 set(PROJECT_SPHINX_DIR "docs_sphinx")
+set(PROJECT_TEST_DIR "tests")
 
 file (GLOB SRC_FILES
   "${PROJECT_SOURCE_DIR}/*.cpp")
@@ -20,8 +21,8 @@ file (GLOB SRC_FILES
 file (GLOB INCLUDE_FILES
   "${PROJECT_INCLUDE_DIR}/*.h*")
 
-file (GLOB test_glb
-  "tests/*.cpp")
+file (GLOB TEST_FILES
+  "${PROJECT_TEST_DIR}/*.cpp*")
 
 add_executable(project ${SRC_FILES} ${INCLUDE_FILES})
 
@@ -35,7 +36,7 @@ target_link_libraries(tests PRIVATE Catch2 Catch2::Catch2WithMain)
 
 # These tests need their own main
 list (REMOVE_ITEM SRC_FILES main.cpp)
-add_executable(tests-main ./tests/main.cpp)
+add_executable(tests-main ${TEST_FILES})
 target_link_libraries(tests-main PRIVATE Catch2::Catch2)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCE_FILES})
