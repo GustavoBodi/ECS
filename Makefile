@@ -1,3 +1,5 @@
+.PHONY: docs
+
 all:
 	cd build && \
 	cmake ../ && \
@@ -14,8 +16,6 @@ test:
 	cmake ../ && \
 	make && \
 	./tests-main
-
-.PHONY: docs
 
 docs:
 	cd docs && \
