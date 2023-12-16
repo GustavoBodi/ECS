@@ -3,6 +3,9 @@
 #include <unordered_map>
 #include "Types.hpp"
 
+/*
+ * @brief Forward declaration of the archetypes graph
+ */
 struct ArchetypeEdge;
 
 /*
@@ -12,6 +15,7 @@ class Column { // Equivalent to an ecs_type_t
   public:
   /*
    * @brief Overload of the indexing operator for selecting a line (Archetype)
+   * @param index Return the value from the buffer of components
    */
   void* operator[](std::size_t index) {
     return static_cast<void*>(static_cast<char*>(elements) + index * element_size);

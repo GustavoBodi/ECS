@@ -15,13 +15,13 @@ class WorldRegistry {
     /*
      * @brief Contructor to the world registry, will create its own archetype graph
      */
-    WorldRegistry(Archetype &root);
+    WorldRegistry();
 
     /*
      * @brief Registers a new component in the registry
-     * @param component_size The size of the new component
      */
-    constexpr ComponentId register_component(const std::size_t component_size);
+    template <typename T>
+    ComponentId register_component();
     
     /*
      * @brief Registers a system in the registry
@@ -76,6 +76,16 @@ class WorldRegistry {
      */
     void tick();
 
+    /*
+     * @brief Returns the amount of registered components
+     */
+    std::size_t count_components();
+
+    /*
+     * Returns the next id for a new entity
+     */
+    uint64_t get_id();
+
   private:
     /*
      * @brief Relation between and entity id with an archetype and a line
@@ -86,7 +96,12 @@ class WorldRegistry {
      * @brief Relation of a component Id with a relation of an archetype for the column
      * in the database
      */
-    std::unordered_map<ComponentId, ArchetypeMap> component_index;
+    std::unordered_map<ComponentId, ArchetypeMap> component_archetype_mapping;
+
+    /*
+     * @brief Maps a component with its size
+     */
+    std::unordered_map<ComponentId, std::size_t> component_index;
 
     /*
      * @brief Relation between a system id and a system
@@ -101,11 +116,17 @@ class WorldRegistry {
     /*
      * @brief Root archetype of the graph
      */
-    Archetype &root;
+    Archetype *root = new Archetype();
 
     /*
      * @brief Next entity id
      */
-    EntityId next_id;
+    uint64_t next_id;
 };
+
+template <typename T>
+ComponentId WorldRegistry::register_component() {
+  component_index[next_id++] = sizeof(T);
+  return next_id - 1;
+}
 
