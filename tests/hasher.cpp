@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../include/Hasher.hpp"
+#include "Hasher.hpp"
 
 TEST_CASE("Hashing correctness", "[hash]") {
   Hasher<uint64_t> hasher;

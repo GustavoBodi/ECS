@@ -1,6 +1,6 @@
-#include "../../include/WorldRegistry.hpp"
-#include "../../include/Archetype.hpp"
-#include "../../include/Types.hpp"
+#include "WorldRegistry.hpp"
+#include "Archetype.hpp"
+#include "Types.hpp"
 
 WorldRegistry::WorldRegistry()
     : entity_index(), component_index(), system_index(), archetype_index(),
