@@ -11,11 +11,11 @@ std::optional<void*> WorldRegistry::get_component(EntityId entity, ComponentId c
   Record &record = entity_index[entity];
   Archetype *archetype = record.archetype;
   ArchetypeMap archetype_map = component_archetype_mapping[component];
-  if (archetype_map.count(archetype->id) == 0) {
+  if (archetype_map.count(archetype->get_id()) == 0) {
     return std::nullopt;
   }
-  ArchetypeRecord &a_record = archetype_map[archetype->id];
-  return std::make_optional(archetype->components[a_record][record.row]);
+  ArchetypeRecord &a_record = archetype_map[archetype->get_id()];
+  return std::make_optional((*archetype)[a_record][record.row]);
 }
 
 void WorldRegistry::delete_entity(EntityId entity) {}
