@@ -1,6 +1,6 @@
 #include <cstdint>
 
-/*
+/*!
  * @brief Abstract class that represents a system, should be extended to represent a system
  */
 class System {

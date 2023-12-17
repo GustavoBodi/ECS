@@ -3,17 +3,17 @@
 #include <unordered_map>
 #include "Types.hpp"
 
-/*
+/*!
  * @brief Forward declaration of the archetypes graph
  */
 struct ArchetypeEdge;
 
-/*
+/*!
  * @brief Colunas do banco de dados que representa os Componentes (Verticalmente)
  */
 class Column { // Equivalent to an ecs_type_t
   public:
-  /*
+  /*!
    * @brief Overload of the indexing operator for selecting a line (Archetype)
    * @param index Return the value from the buffer of components
    */
@@ -27,7 +27,7 @@ class Column { // Equivalent to an ecs_type_t
     std::size_t count;        // Number of elements
 };
 
-/* 
+/*!
  * @brief Structure of an Archetype in a line of the database
  * with the data and its id
  */
@@ -38,7 +38,7 @@ struct Archetype {
   std::unordered_map<ComponentId, ArchetypeEdge> edges;
 };
 
-/*
+/*!
  * @brief Connections to other Archetypes
  */
 struct ArchetypeEdge {
@@ -46,7 +46,7 @@ struct ArchetypeEdge {
   Archetype *remove;
 };
 
-/*
+/*!
  * @brief The Record is an archetype relation with its row on the database
  */
 struct Record {
