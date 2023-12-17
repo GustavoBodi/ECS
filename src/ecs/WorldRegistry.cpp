@@ -18,23 +18,20 @@ std::optional<void*> WorldRegistry::get_component(EntityId entity, ComponentId c
   return std::make_optional(archetype->components[a_record][record.row]);
 }
 
-EntityId WorldRegistry::create_entity(ArchetypeSignature &component_list)
-{
-  EntityId new_entity = next_id++;
-  return new_entity;
-}
-
 void WorldRegistry::delete_entity(EntityId entity) {}
 
 std::optional<const Archetype*> WorldRegistry::add_component(EntityId entity, ComponentId component) {}
 
 std::optional<const Archetype*> WorldRegistry::remove_component(EntityId entity, ComponentId component) {}
 
-void WorldRegistry::disable_system(const SystemId system) {}
+void WorldRegistry::disable_system(const SystemId system) {
+  disabled_systems_index.insert(system);
+}
 
 void WorldRegistry::tick() {
   for (auto system: system_index) {
-    system.second.run();
+    if (disabled_systems_index.count(system.first) == 0)
+      system.second.run();
   }
 }
 

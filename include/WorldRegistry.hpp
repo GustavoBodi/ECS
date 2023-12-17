@@ -49,7 +49,8 @@ class WorldRegistry {
      * @brief Creates a new entity
      * @param component_list Passes the initial components of the entity
      */
-    EntityId create_entity(ArchetypeSignature &component_list);
+    template<typename ...T>
+    EntityId create_entity();
 
     /*
      * @brief Deletes and entity
@@ -109,6 +110,11 @@ class WorldRegistry {
     std::unordered_map<SystemId, System&> system_index;
 
     /*
+     * @brief List of disabled systems
+     */
+    std::unordered_set<SystemId> disabled_systems_index;
+
+    /*
      * @brief Relationship between a list of components and the archetypes
      */
     std::unordered_map<ArchetypeSignature, Archetype, Hasher<ComponentId>> archetype_index;
@@ -128,5 +134,12 @@ template <typename T>
 ComponentId WorldRegistry::register_component() {
   component_index[next_id++] = sizeof(T);
   return next_id - 1;
+}
+
+template <typename ...T>
+EntityId WorldRegistry::create_entity()
+{
+  EntityId new_entity = next_id++;
+  return new_entity;
 }
 
