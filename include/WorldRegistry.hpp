@@ -50,10 +50,17 @@ class WorldRegistry {
 
     /*!
      * @brief Creates a new entity
-     * @param component_list Passes the initial components of the entity
+     * @param T Passes the initial components of the entity
      */
     template<typename ...T>
     EntityId create_entity();
+
+    /*!
+     * @brief Adds a new Archetype
+     * @param T passes the components of the new archetype
+     */
+    template<typename ...T>
+    std::optional<ArchetypeId> register_archetype();
 
     /*!
      * @brief Deletes and entity
@@ -152,7 +159,13 @@ ComponentId WorldRegistry::register_component() {
 template <typename ...T>
 EntityId WorldRegistry::create_entity()
 {
+  Archetype *root = root;
   EntityId new_entity = next_id++;
   return new_entity;
+}
+
+template <typename ...T>
+std::optional<ArchetypeId> WorldRegistry::register_archetype() {
+
 }
 
