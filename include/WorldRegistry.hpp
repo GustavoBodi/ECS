@@ -15,7 +15,7 @@ class WorldRegistry {
     /*
      * @brief Contructor to the world registry, will create its own archetype graph
      */
-    WorldRegistry();
+    WorldRegistry(uint64_t cycle_reset);
 
     /*
      * @brief Registers a new component in the registry
@@ -30,7 +30,7 @@ class WorldRegistry {
      * when the registry itself ticks
      */
     template <typename Func, typename=std::enable_if_t<std::is_function_v<Func>>, typename ...T>
-    const SystemId register_system(Func system, T... dependencies);
+    const SystemId register_system(Func system);
     
     /*
      * @brief Disables a system tempararily
@@ -128,6 +128,16 @@ class WorldRegistry {
      * @brief Next entity id
      */
     uint64_t next_id;
+
+    /*
+     * @brief Represents the internal abstractions of cycles (relates mainly to the systems that should run each tick)
+     */
+    uint64_t cycle_reset;
+
+    /*
+     * @brief The cycle the world is currently in
+     */
+    uint64_t cycle;
 };
 
 template <typename T>

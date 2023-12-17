@@ -2,9 +2,9 @@
 #include "Archetype.hpp"
 #include "Types.hpp"
 
-WorldRegistry::WorldRegistry()
+WorldRegistry::WorldRegistry(uint64_t cycle_reset)
     : entity_index(), component_index(), system_index(), archetype_index(),
-      next_id{0} 
+      next_id{0}, cycle_reset{cycle_reset}
 {}
 
 std::optional<void*> WorldRegistry::get_component(EntityId entity, ComponentId component) {
@@ -31,7 +31,11 @@ void WorldRegistry::disable_system(const SystemId system) {
 void WorldRegistry::tick() {
   for (auto system: system_index) {
     if (disabled_systems_index.count(system.first) == 0)
-      system.second.run();
+      if (system.second.get_tick() % cycle == 0)
+        system.second.run();
+    if (cycle == cycle_reset)
+      cycle = 0;
+    ++cycle;
   }
 }
 
