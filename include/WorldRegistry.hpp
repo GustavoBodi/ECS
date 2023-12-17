@@ -5,6 +5,9 @@
 #include "Hasher.hpp"
 #include "System.hpp"
 
+/*!
+ * @brief System id representation
+ */
 using SystemId = uint64_t;
 
 /*!
@@ -83,7 +86,7 @@ class WorldRegistry {
     std::size_t count_components();
 
     /*!
-     * Returns the next id for a new entity
+     * @brief Returns the next id for a new entity
      */
     uint64_t get_id();
 
