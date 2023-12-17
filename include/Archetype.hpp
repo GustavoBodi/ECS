@@ -35,8 +35,9 @@ class Archetype {
   public:
     /*!
      * @brief The archetype constructor, gets its id from the registry
+     * @param id The id of the new archetype
      */
-    Archetype();
+    Archetype(ArchetypeId id);
 
     /*!
      * @brief Returns the id from the archetype

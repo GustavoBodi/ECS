@@ -139,7 +139,7 @@ class WorldRegistry {
     /*!
      * @brief Root archetype of the graph
      */
-    Archetype *root = new Archetype();
+    Archetype *root = new Archetype {0};
 
     /*!
      * @brief Next entity id
