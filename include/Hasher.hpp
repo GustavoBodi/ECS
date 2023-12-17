@@ -3,9 +3,15 @@
 #include <vector>
 #include <cstdint>
 
+/*!
+ * @brief Template class for hashing vectors of some kind of id
+ */
 template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
 class Hasher {
   public:
+    /*!
+     * @brief Overloaded function call for satisfying std::hash
+     */
     std::size_t operator()(std::vector<T> const& vec) const {
       std::size_t seed = vec.size();
       for(auto x : vec) {

@@ -4,29 +4,37 @@
 #include <unordered_map>
 
 /*!
- * Id internal representation
+ * @brief Component id internal representation
  */
 using ComponentId = uint64_t;
+
+/*!
+ * @brief Archetype id internal representation
+ */
 using ArchetypeId = uint64_t;
+
+/*!
+ * @brief Entity id internal representation
+ */
 using EntityId = uint64_t;
 
 /*!
- * List of an component from archetypes
+ * @brief List of an component from archetypes
  */
 using ArchetypeSignature = std::unordered_set<ComponentId>;
 
 /*!
- * Set of all the archetypes
+ * @brief Set of all the archetypes
  */
 using ArchetypeSet = std::unordered_set<ArchetypeId>;
 
 /*!
- * For a certain archetype and a certain component, the entry describes the column
+ * @brief For a certain archetype and a certain component, the entry describes the column
  */
 using ArchetypeRecord = std::size_t;
 
 /*!
- * Finding components in archetypes in O(1)
+ * @brief Finding components in archetypes in O(1)
  */
 using ArchetypeMap = std::unordered_map<ArchetypeId, ArchetypeRecord>;
 

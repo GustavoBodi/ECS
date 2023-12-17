@@ -9,7 +9,7 @@
 struct ArchetypeEdge;
 
 /*!
- * @brief Colunas do banco de dados que representa os Componentes (Verticalmente)
+ * @brief Database Columns that represent components (vertically)
  */
 class Column { // Equivalent to an ecs_type_t
   public:
