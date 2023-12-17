@@ -31,11 +31,37 @@ class Column { // Equivalent to an ecs_type_t
  * @brief Structure of an Archetype in a line of the database
  * with the data and its id
  */
-struct Archetype {
-  ArchetypeId id;
-  ArchetypeSignature type;
-  std::vector<Column> components;
-  std::unordered_map<ComponentId, ArchetypeEdge> edges;
+class Archetype {
+  public:
+    /*!
+     * @brief The archetype constructor, gets its id from the registry
+     */
+    Archetype();
+
+    /*!
+     * @brief Returns the id from the archetype
+     */
+    ArchetypeId get_id();
+
+    /*!
+     * @brief Returns a reference to the edges fo the archetype
+     */
+    std::unordered_map<ComponentId, ArchetypeEdge>& get_edges();
+
+    /*!
+     * @brief Returns the archetype signature
+     */
+    ArchetypeSignature &get_type();
+
+    /*!
+     * @brief Overloads the indexing operator for getting the components
+     */
+    Column &operator[] (std::size_t index);
+  private:
+    ArchetypeId id;
+    ArchetypeSignature type;
+    std::vector<Column> components;
+    std::unordered_map<ComponentId, ArchetypeEdge> edges;
 };
 
 /*!

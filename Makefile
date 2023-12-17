@@ -1,14 +1,15 @@
 .PHONY: docs
 
 all:
+	mkdir -p build/ && \
 	cd build && \
 	cmake ../ && \
 	make && \
 	./project
 
 setup_docs:
-	python -m venv ./docs/.venv
-	. ./docs/.venv/bin/activate
+	python -m venv ./docs/.venv && \
+	. ./docs/.venv/bin/activate && \
 	pip install sphinx sphinx-sitemap sphinx-rtd-theme breathe exhale==0.3.6
 
 run:

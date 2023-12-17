@@ -63,6 +63,13 @@ class WorldRegistry {
     std::optional<ArchetypeId> register_archetype();
 
     /*!
+     * @brief Adds Archetype to an entity
+     * @param entity The entity the archetype will be added
+     * @param archetype Reference to the archetype of the new entity
+     */
+    void add_archetype(EntityId entity, ArchetypeId &archetype);
+
+    /*!
      * @brief Deletes and entity
      * @param entity The id of the entity
      */
