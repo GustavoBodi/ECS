@@ -1,9 +1,9 @@
 #include <atomic>
 
-extern std::atomic_int TypeIdCounter;
+extern std::atomic_uint64_t TypeIdCounter;
 
 template <typename T>
 int getTypeId() {
-  static int id = ++TypeIdCounter;
+  static uint64_t id = ++TypeIdCounter;
   return id;
 }

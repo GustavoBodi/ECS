@@ -4,6 +4,7 @@
 #include "Archetype.hpp"
 #include "Hasher.hpp"
 #include "System.hpp"
+#include "TypeMapper.hpp"
 
 /*!
  * @brief System id representation

@@ -1,11 +1,10 @@
-#include "Types.hpp"
 #include <unordered_map>
 #include <atomic>
 
 template <typename Type>
 class TypeMapper {
   private:
-    typedef std::unordered_map<ComponentId, Type> MapperType;
+    typedef std::unordered_map<uint64_t, Type> MapperType;
 
   public:
     typedef typename MapperType::iterator iterator;
@@ -27,20 +26,22 @@ class TypeMapper {
     const_iterator find() const { return mapper.find(get_type_id<Key>()); }
 
     template <typename Key>
-    void put(Type &&value) {
-      mapper[get_type_id<Key>()] = std::forward<Type>(value);
+    uint64_t put(Type &&value) {
+      uint64_t id { get_type_id<Key>() };
+      mapper[id] = std::forward<Type>(value);
+      return id;
     }
 
   private:
     MapperType mapper;
     template <typename Key>
-    inline static int get_type_id() {
-      static const int id = LastTypeId++;
+    inline static uint64_t get_type_id() {
+      static const uint64_t id = LastTypeId++;
       return id;
     }
 
-    static std::atomic_int LastTypeId;
+    static std::atomic_uint64_t LastTypeId;
 };
 
 template <class ValueType>
-std::atomic_int TypeMapper<ValueType>::LastTypeId(0);
+std::atomic_uint64_t TypeMapper<ValueType>::LastTypeId(0);
