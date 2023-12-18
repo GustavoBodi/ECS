@@ -37,6 +37,7 @@ class Archetype {
      * @brief The archetype constructor, gets its id from the registry
      * @param id The id of the new archetype
      */
+    template <typename ...T>
     Archetype(ArchetypeId id);
 
     /*!
@@ -86,3 +87,7 @@ struct Record {
   std::size_t row;
 };
 
+template <typename ...T>
+Archetype::Archetype(ArchetypeId id): id {id}
+{
+}

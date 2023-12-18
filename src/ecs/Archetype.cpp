@@ -1,9 +1,5 @@
 #include "Archetype.hpp"
 
-Archetype::Archetype(ArchetypeId id): id {id}
-{
-}
-
 ArchetypeId Archetype::get_id()
 {
   return id;

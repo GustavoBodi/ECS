@@ -173,6 +173,6 @@ EntityId WorldRegistry::create_entity()
 
 template <typename ...T>
 std::optional<ArchetypeId> WorldRegistry::register_archetype() {
-
+  Archetype new_archetype {++next_id};
 }
 
