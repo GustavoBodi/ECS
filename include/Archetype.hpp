@@ -58,6 +58,11 @@ class Archetype {
      * @brief Overloads the indexing operator for getting the components
      */
     Column &operator[] (std::size_t index);
+
+    /*!
+     * @brief Archetype Destructor
+     */
+    ~Archetype();
   private:
     ArchetypeId id;
     ArchetypeSignature type;
