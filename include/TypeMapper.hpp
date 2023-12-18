@@ -19,6 +19,10 @@ class TypeMapper {
 
     iterator end() { return mapper.end(); }
 
+    std::size_t size() { return _size; }
+
+    std::size_t size() const { return _size; }
+
     template <typename Key>
     iterator find() { return mapper.find(get_type_id<Key>()); }
 
@@ -29,10 +33,12 @@ class TypeMapper {
     uint64_t put(Type &&value) {
       uint64_t id { get_type_id<Key>() };
       mapper[id] = std::forward<Type>(value);
+      ++_size;
       return id;
     }
 
   private:
+    std::size_t _size { 0 };
     MapperType mapper;
     template <typename Key>
     inline static uint64_t get_type_id() {

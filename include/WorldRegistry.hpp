@@ -120,7 +120,7 @@ class WorldRegistry {
     /*!
      * @brief Maps a component with its size
      */
-    std::unordered_map<ComponentId, std::size_t> component_index;
+    TypeMapper<std::size_t> component_index;
 
     /*!
      * @brief Relation between a system id and a system
@@ -160,8 +160,8 @@ class WorldRegistry {
 
 template <typename T>
 ComponentId WorldRegistry::register_component() {
-  component_index[next_id++] = sizeof(T);
-  return next_id - 1;
+  ComponentId id = component_index.put<T>(sizeof(T));
+  return id;
 }
 
 template <typename ...T>
