@@ -1,6 +1,5 @@
 #include <unordered_map>
 #include <atomic>
-#include <cmath>
 
 template <typename Type>
 class TypeMapper {
