@@ -1,5 +1,6 @@
 #include <unordered_map>
 #include <atomic>
+#include <cmath>
 
 template <typename Type>
 class TypeMapper {
@@ -23,15 +24,15 @@ class TypeMapper {
 
     std::size_t size() const { return _size; }
 
-    template <typename Key>
-    iterator find() { return mapper.find(get_type_id<Key>()); }
+    template <typename ...Key>
+    iterator find() { return mapper.find(get_type_id<Key...>()); }
 
-    template <typename Key>
-    const_iterator find() const { return mapper.find(get_type_id<Key>()); }
+    template <typename ...Key>
+    const_iterator find() const { return mapper.find(get_type_id<Key...>()); }
 
-    template <typename Key>
+    template <typename ...Key>
     uint64_t put(Type &&value) {
-      uint64_t id { get_type_id<Key>() };
+      uint64_t id { get_type_id<Key...>() };
       mapper[id] = std::forward<Type>(value);
       ++_size;
       return id;
@@ -40,7 +41,7 @@ class TypeMapper {
   private:
     std::size_t _size { 0 };
     MapperType mapper;
-    template <typename Key>
+    template <typename ...Key>
     inline static uint64_t get_type_id() {
       static const uint64_t id = LastTypeId++;
       return id;
