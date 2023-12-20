@@ -52,3 +52,11 @@ TEST_CASE("Multiple type mapping", "[multiple_mapper]") {
   //REQUIRE(mapper.find<Velocity, Acceleration>()->second == mapper.find<Acceleration, Velocity>()->second);
 }
 
+TEST_CASE("Erasing from type mapping", "[erase]") {
+  TypeMapper<uint32_t> mapper {};
+  uint64_t value_to_insert = 5;
+  uint64_t id = mapper.put<Acceleration, Velocity>(5);
+  uint32_t remove_value = mapper.remove<Acceleration, Velocity>();
+  REQUIRE(5 == remove_value);
+}
+

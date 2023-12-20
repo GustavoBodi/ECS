@@ -30,6 +30,13 @@ class TypeMapper {
     const_iterator find() const { return mapper.find(get_type_id<Key...>()); }
 
     template <typename ...Key>
+    Type remove() {
+      auto value = find<Key...>()->second;
+      mapper.erase(value);
+      return value;
+    }
+
+    template <typename ...Key>
     uint64_t put(Type &&value) {
       uint64_t id { get_type_id<Key...>() };
       mapper[id] = std::forward<Type>(value);
