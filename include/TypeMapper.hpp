@@ -37,6 +37,11 @@ class TypeMapper {
       return id;
     }
 
+    template <typename ...Key>
+    uint64_t id() {
+      return get_type_id<Key...>();
+    }
+
   private:
     std::size_t _size { 0 };
     MapperType mapper;

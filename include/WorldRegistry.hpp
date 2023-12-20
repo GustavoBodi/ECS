@@ -33,9 +33,9 @@ class WorldRegistry {
      * @param tick_rate Every something ticks a system will run
      * when the registry itself ticks
      */
-    template <typename Func, typename=std::enable_if_t<std::is_function_v<Func>>, typename ...T>
+    template <typename Func, std::enable_if_t<std::is_function_v<Func>>, typename ...T>
     const SystemId register_system(Func system);
-    
+
     /*!
      * @brief Disables a system tempararily
      * @param system The id of the system to be disabled
@@ -95,7 +95,7 @@ class WorldRegistry {
      */
     void tick();
 
-    /*!
+    /*l!
      * @brief Returns the amount of registered components
      */
     std::size_t count_components();
@@ -104,6 +104,18 @@ class WorldRegistry {
      * @brief Returns the next id for a new entity
      */
     uint64_t get_id();
+
+    /*!
+     * @brief Returns the id associated with the component type
+     */
+    template <typename T>
+    ComponentId get_component_id();
+
+    /*!
+     * @brief Return the id associated with the achetype type
+     */
+    template <typename ...T>
+    ArchetypeId get_archetype_id();
 
   private:
     /*!
@@ -137,6 +149,11 @@ class WorldRegistry {
      */
     std::unordered_map<ArchetypeSignature, Archetype, Hasher<ComponentId>> archetype_index;
 
+    /*
+     * @brief An archetype id list
+     */
+    TypeMapper<ArchetypeId> archetype_ids;
+
     /*!
      * @brief Root archetype of the graph
      */
@@ -159,6 +176,11 @@ class WorldRegistry {
 };
 
 template <typename T>
+ComponentId WorldRegistry::get_component_id() {
+  ComponentId id = component_index.id<T>();
+}
+
+template <typename T>
 ComponentId WorldRegistry::register_component() {
   ComponentId id = component_index.put<T>(sizeof(T));
   return id;
@@ -174,6 +196,17 @@ EntityId WorldRegistry::create_entity()
 
 template <typename ...T>
 std::optional<ArchetypeId> WorldRegistry::register_archetype() {
-  Archetype new_archetype {++next_id};
+  ArchetypeId id = archetype_ids.put<T...>(next_id++);
+  Archetype new_archetype {id};
+  return std::make_optional(id);
 }
 
+template <typename Func, std::enable_if_t<std::is_function_v<Func>>, typename ...T>
+const SystemId WorldRegistry::register_system(Func system) {
+  SystemId id = next_id++;
+}
+
+template <typename ...T>
+ArchetypeId WorldRegistry::get_archetype_id() {
+  return archetype_ids.id<T...>();
+}

@@ -20,7 +20,21 @@ std::optional<void*> WorldRegistry::get_component(EntityId entity, ComponentId c
 
 void WorldRegistry::delete_entity(EntityId entity) {}
 
-std::optional<const Archetype*> WorldRegistry::add_component(EntityId entity, ComponentId component) {}
+std::optional<const Archetype*> WorldRegistry::add_component(EntityId entity, ComponentId component) {
+  // Find the record
+  Record &record = entity_index[entity];
+  ArchetypeSignature &signature = record.archetype->get_type();
+  ArchetypeSignature copy = signature;
+  copy.insert(component);
+
+  // If there is no archetype, archetype insert vertex in the graph
+
+  // Add Archetype to component list of archetypes
+
+  // Move entity to the right of the graph
+
+  // Insert into the entity index
+}
 
 std::optional<const Archetype*> WorldRegistry::remove_component(EntityId entity, ComponentId component) {}
 
