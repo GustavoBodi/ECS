@@ -7,28 +7,66 @@ class TypeMapper {
     typedef std::unordered_map<uint64_t, Type> MapperType;
 
   public:
+    /*!
+     * @brief Type alias for the iterator
+     */
     typedef typename MapperType::iterator iterator;
+
+    /*!
+     * @brief Type alias for the const iterator
+     */
     typedef typename MapperType::const_iterator const_iterator;
+
+    /*!
+     * @brief Type alias for the value
+     */
     typedef typename MapperType::value_type value_type;
 
+    /*!
+     * @brief Const begin iterator
+     */
     const_iterator begin() const { return mapper.begin(); }
 
+    /*!
+     * @brief Const end iterator
+     */
     const_iterator end() const { return mapper.end(); }
 
+    /*!
+     * @brief Begin iterator
+     */
     iterator begin() { return mapper.begin(); }
 
+    /*!
+     * @brief End iterator
+     */
     iterator end() { return mapper.end(); }
 
+    /*!
+     * @brief Returns the size
+     */
     std::size_t size() { return _size; }
 
+    /*!
+     * @brief Returns the size as const
+     */
     std::size_t size() const { return _size; }
 
+    /*!
+     * @brief Finds a mapping based on the type
+     */
     template <typename ...Key>
     iterator find() { return mapper.find(get_type_id<Key...>()); }
 
+    /*!
+     * @brief Finds a mapping (const) based on the type
+     */
     template <typename ...Key>
     const_iterator find() const { return mapper.find(get_type_id<Key...>()); }
 
+    /*!
+     * @brief Removes based on a type mapping
+     */
     template <typename ...Key>
     Type remove() {
       auto value = find<Key...>()->second;
@@ -36,6 +74,9 @@ class TypeMapper {
       return value;
     }
 
+    /*!
+     * @brief Inserts in the type mapping
+     */
     template <typename ...Key>
     uint64_t put(Type &&value) {
       uint64_t id { get_type_id<Key...>() };
@@ -44,6 +85,9 @@ class TypeMapper {
       return id;
     }
 
+    /*!
+     * @brief Returns the id (internal) from the type
+     */
     template <typename ...Key>
     uint64_t id() {
       return get_type_id<Key...>();
