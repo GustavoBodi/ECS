@@ -53,6 +53,12 @@ class TypeMapper {
     std::size_t size() const { return _size; }
 
     /*!
+     * @brief Return true if the map contains the type
+     */
+    template <typename ...Key>
+    bool contains() const { return mapper.contains(get_type_id<Key...>()); }
+
+    /*!
      * @brief Finds a mapping based on the type
      */
     template <typename ...Key>
@@ -70,7 +76,7 @@ class TypeMapper {
     template <typename ...Key>
     Type remove() {
       auto value = find<Key...>()->second;
-      mapper.erase(value);
+      mapper.erase(get_type_id<Key...>());
       return value;
     }
 

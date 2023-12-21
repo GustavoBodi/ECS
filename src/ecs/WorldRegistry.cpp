@@ -8,22 +8,22 @@ WorldRegistry::WorldRegistry(uint64_t cycle_reset)
 {}
 
 std::optional<void*> WorldRegistry::get_component(EntityId entity, ComponentId component) {
-  Record &record = entity_index[entity];
-  Archetype *archetype = record.archetype;
-  ArchetypeMap archetype_map = component_archetype_mapping[component];
-  if (archetype_map.count(archetype->get_id()) == 0) {
+  Record *record = entity_index[entity];
+  Archetype *archetype = record->archetype;
+  ArchetypeMap *archetype_map = component_archetype_mapping[component];
+  if (archetype_map->count(archetype->get_id()) == 0) {
     return std::nullopt;
   }
-  ArchetypeRecord &a_record = archetype_map[archetype->get_id()];
-  return std::make_optional((*archetype)[a_record][record.row]);
+  ArchetypeRecord *a_record = (*archetype_map)[archetype->get_id()];
+  return std::make_optional((*archetype)[*a_record][record->row]);
 }
 
 void WorldRegistry::delete_entity(EntityId entity) {}
 
 std::optional<const Archetype*> WorldRegistry::add_component(EntityId entity, ComponentId component) {
   // Find the record
-  Record &record = entity_index[entity];
-  ArchetypeSignature &signature = record.archetype->get_type();
+  Record *record = entity_index[entity];
+  ArchetypeSignature &signature = record->archetype->get_type();
   ArchetypeSignature copy = signature;
   copy.insert(component);
 
@@ -45,9 +45,9 @@ void WorldRegistry::disable_system(const SystemId system) {
 void WorldRegistry::tick() {
   for (auto system: system_index) {
     bool is_disabled = disabled_systems_index.count(system.first) != 0;
-    bool should_run = system.second.get_tick() % cycle == 0;
+    bool should_run = system.second->get_tick() % cycle == 0;
     if (!is_disabled && should_run)
-        system.second.run();
+        system.second->run();
     if (cycle == cycle_reset)
       cycle = 0;
     ++cycle;

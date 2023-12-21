@@ -68,7 +68,8 @@ class WorldRegistry {
      * @param entity The entity the archetype will be added
      * @param archetype Reference to the archetype of the new entity
      */
-    void add_archetype(EntityId entity, ArchetypeId &archetype);
+    template <typename ...T>
+    void add_archetype(EntityId entity);
 
     /*!
      * @brief Deletes and entity
@@ -121,13 +122,13 @@ class WorldRegistry {
     /*!
      * @brief Relation between and entity id with an archetype and a line
      */
-    std::unordered_map<EntityId, Record> entity_index;
+    std::unordered_map<EntityId, Record*> entity_index;
 
     /*!
      * @brief Relation of a component Id with a relation of an archetype for the column
      * in the database
      */
-    std::unordered_map<ComponentId, ArchetypeMap> component_archetype_mapping;
+    std::unordered_map<ComponentId, ArchetypeMap*> component_archetype_mapping;
 
     /*!
      * @brief Maps a component with its size
@@ -137,7 +138,7 @@ class WorldRegistry {
     /*!
      * @brief Relation between a system id and a system
      */
-    std::unordered_map<SystemId, System&> system_index;
+    std::unordered_map<SystemId, System*> system_index;
 
     /*!
      * @brief List of disabled systems
@@ -147,7 +148,7 @@ class WorldRegistry {
     /*!
      * @brief Relationship between a list of components and the archetypes
      */
-    std::unordered_map<ArchetypeSignature, Archetype, Hasher<ComponentId>> archetype_index;
+    std::unordered_map<ArchetypeId, Archetype*> archetype_index;
 
     /*
      * @brief An archetype id list
@@ -191,14 +192,24 @@ EntityId WorldRegistry::create_entity()
 {
   Archetype *root = root;
   EntityId new_entity = next_id++;
+  if (!archetype_ids.contains<T...>()) {
+    register_archetype<T...>();
+  }
+  ArchetypeId archetype_id = archetype_ids.find<T...>()->first;
+  Archetype *archetype = archetype_index[archetype_id];
+  Record *entity_record = new Record {};
+  entity_record->archetype = archetype;
+  entity_record->row = 0;
+  entity_index[new_entity] = entity_record;
   return new_entity;
 }
 
 template <typename ...T>
 std::optional<ArchetypeId> WorldRegistry::register_archetype() {
-  ArchetypeId id = archetype_ids.put<T...>(next_id++);
-  Archetype new_archetype {id};
-  return std::make_optional(id);
+  ArchetypeId arch_id = archetype_ids.put<T...>(next_id++);
+  Archetype *new_archetype = new Archetype(arch_id);
+  archetype_index[arch_id] = new_archetype;
+  return std::make_optional(arch_id);
 }
 
 template <typename Func, std::enable_if_t<std::is_function_v<Func>>, typename ...T>
@@ -210,3 +221,10 @@ template <typename ...T>
 ArchetypeId WorldRegistry::get_archetype_id() {
   return archetype_ids.id<T...>();
 }
+
+template <typename ...T>
+void WorldRegistry::add_archetype(EntityId entity) {
+  ArchetypeId arch_id = archetype_ids.find<T...>()->first;
+  Archetype *archetype = archetype_index[arch_id];
+}
+

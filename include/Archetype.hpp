@@ -9,7 +9,8 @@
 struct ArchetypeEdge;
 
 /*!
- * @brief Database Columns that represent components (vertically)
+ * @brief Database Columns that represent components (vertically), the row is a representation
+ * of an entity
  */
 class Column { // Equivalent to an ecs_type_t
   public:
@@ -37,8 +38,7 @@ class Archetype {
      * @brief The archetype constructor, gets its id from the registry
      * @param id The id of the new archetype
      */
-    template <typename ...T>
-    Archetype(ArchetypeId id);
+    Archetype(ArchetypeId id): id{id} {};
 
     /*!
      * @brief Returns the id from the archetype
@@ -46,7 +46,7 @@ class Archetype {
     ArchetypeId get_id();
 
     /*!
-     * @brief Returns a reference to the edges fo the archetype
+     * @brief Returns a reference to the edges of the archetype
      */
     std::unordered_map<ComponentId, ArchetypeEdge>& get_edges();
 
@@ -87,7 +87,3 @@ struct Record {
   std::size_t row;
 };
 
-template <typename ...T>
-Archetype::Archetype(ArchetypeId id): id {id}
-{
-}

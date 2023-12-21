@@ -40,11 +40,23 @@ TEST_CASE("Component id", "[component_id]") {
 
 TEST_CASE("Entity Id", "[entity_id]") {
   WorldRegistry registry {10};
+  registry.register_component<Velocity>();
+  registry.register_archetype<Velocity>();
   EntityId list [10];
   for (int i = 0; i < 10; ++i) {
-    list[i] = registry.create_entity<>();
+    list[i] = registry.create_entity<Velocity>();
   }
-  REQUIRE(registry.get_id() == 10);
+  REQUIRE(registry.get_id() == 11);
+}
+
+TEST_CASE("Register entity without archetype", "[archetypeless_registering]") {
+  WorldRegistry registry {10};
+  registry.register_component<Velocity>();
+  EntityId list [10];
+  for (int i = 0; i < 10; ++i) {
+    list[i] = registry.create_entity<Velocity>();
+  }
+  REQUIRE(registry.get_id() == 11);
 }
 
 TEST_CASE("Id component retrieval from type", "[component_id_retrieval_from_type]") {
@@ -62,13 +74,17 @@ TEST_CASE("Archetype Id", "[archetype_id]") {
   ComponentId id_vel = registry.register_component<Velocity>();
   ComponentId id_speed = registry.register_component<Speed>();
   ComponentId id_acceleration = registry.register_component<Acceleration>();
-  ArchetypeId vel_speed_arch = registry.register_archetype<Velocity, Speed>().value();
-  ArchetypeId speed_arch = registry.register_archetype<Speed>().value();
-  ArchetypeId speed_acc_arch = registry.register_archetype<Speed, Acceleration>().value();
+  auto vel_speed_arch = registry.register_archetype<Velocity, Speed>().value();
+  auto speed_arch = registry.register_archetype<Speed>().value();
+  auto speed_acc_arch = registry.register_archetype<Speed, Acceleration>().value();
   REQUIRE(id_vel != id_speed);
   REQUIRE(id_speed != id_acceleration);
   REQUIRE(id_acceleration != id_vel);
   REQUIRE(vel_speed_arch == registry.get_archetype_id<Velocity, Speed>());
   REQUIRE(speed_acc_arch == registry.get_archetype_id<Speed, Acceleration>());
   REQUIRE(speed_arch == registry.get_archetype_id<Speed>());
+}
+
+TEST_CASE("Find Component", "[component_entity]") {
+
 }

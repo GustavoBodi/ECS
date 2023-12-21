@@ -5,6 +5,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/hana.hpp>
 #include "TypeMapper.hpp"
+#include "Types.hpp"
 
 struct Velocity {
   int x;
@@ -18,11 +19,12 @@ struct Acceleration {
 
 TEST_CASE("Type mapping", "[mapper]") {
   auto mapper = TypeMapper<uint32_t>();
-  mapper.put<Velocity>(10);
+  ComponentId vel_id = mapper.put<Velocity>(10);
   mapper.put<Acceleration>(7);
   REQUIRE(mapper.find<Acceleration>()->second != mapper.find<Velocity>()->second);
   REQUIRE(mapper.find<Velocity>()->second == 10);
   REQUIRE(mapper.find<Acceleration>()->second == 7);
+  REQUIRE(mapper.find<Velocity>()->first == vel_id);
   REQUIRE(mapper.find<Acceleration>()->second == mapper.find<Acceleration>()->second);
 }
 
@@ -60,3 +62,11 @@ TEST_CASE("Erasing from type mapping", "[erase]") {
   REQUIRE(5 == remove_value);
 }
 
+TEST_CASE("Check contains", "[contains]") {
+  TypeMapper<uint32_t> mapper {};
+  uint64_t id = mapper.put<Acceleration>(2);
+  REQUIRE( mapper.contains<Velocity>() == false );
+  REQUIRE( mapper.contains<Acceleration>() == true );
+  mapper.remove<Acceleration>();
+  REQUIRE( mapper.contains<Acceleration>() == false );
+}
