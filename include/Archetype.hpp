@@ -38,11 +38,11 @@ class Column { // Equivalent to an ecs_type_t
      * @tparam Component The component type
      */
     template <typename Component>
-    std::size_t insert(Component component) {
+    std::size_t insert(Component component, std::size_t index) {
       if ( count == max_amount )
         throw std::exception();
       Component (*array)[max_amount] = (Component(*)[max_amount]) elements;
-      (*array)[count] = component;
+      (*array)[index] = component;
       count++;
       return count - 1;
     }

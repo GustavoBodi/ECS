@@ -85,14 +85,33 @@ TEST_CASE("Archetype Id", "[archetype_id]") {
   REQUIRE(speed_arch == registry.get_archetype_id<Speed>());
 }
 
-TEST_CASE("Find Component", "[component_entity]") {
+TEST_CASE("Find Component (Single Component archetype)", "[single_component_retrieval]") {
   WorldRegistry registry { 10 };
+
   ComponentId id_vel = registry.register_component<Velocity>();
+  ComponentId id_acc = registry.register_component<Acceleration>();
+
   EntityId entity = registry.create_entity<Velocity>();
-  registry.add_component(entity, id_vel);
-  Velocity velocity = Velocity {10, 20};
+  EntityId entity2 = registry.create_entity<Velocity>();
+  EntityId entity3 = registry.create_entity<Acceleration>();
+  EntityId entity4 = registry.create_entity<Acceleration>();
+  EntityId entity5 = registry.create_entity<Acceleration, Velocity>();
+
   registry.attach_component<Velocity>(entity, (Velocity){10, 20});
-  Velocity component_from_registry = registry.get_component<Velocity>(entity).value();
-  REQUIRE(component_from_registry.x == 10);
-  REQUIRE(component_from_registry.y == 20);
+  registry.attach_component<Velocity>(entity2, (Velocity){20, 30});
+  registry.attach_component<Acceleration>(entity3, (Acceleration){40, 50});
+  registry.attach_component<Acceleration>(entity4, (Acceleration){60, 10});
+
+  Velocity component_from_registry_1 = registry.get_component<Velocity>(entity).value();
+  REQUIRE(component_from_registry_1.x == 10);
+  REQUIRE(component_from_registry_1.y == 20);
+  Velocity component_from_registry_2 = registry.get_component<Velocity>(entity2).value();
+  REQUIRE(component_from_registry_2.x == 20);
+  REQUIRE(component_from_registry_2.y == 30);
+  Acceleration component_from_registry_3 = registry.get_component<Acceleration>(entity3).value();
+  REQUIRE(component_from_registry_3.x == 40);
+  REQUIRE(component_from_registry_3.y == 50);
+  Acceleration component_from_registry_4 = registry.get_component<Acceleration>(entity4).value();
+  REQUIRE(component_from_registry_4.x == 60);
+  REQUIRE(component_from_registry_4.y == 10);
 }

@@ -283,15 +283,7 @@ void WorldRegistry::attach_component(EntityId entity, T component) {
   Archetype *archetype = record->archetype;
   ArchetypeMap *archetype_map = component_archetype_mapping.find<T>()->second;
   ArchetypeRecord a_record = (*archetype_map)[archetype->get_id()];
-  std::cout << a_record << std::endl;
-  auto value = (*archetype);
-  (*archetype)[a_record].insert(component);
-
-  //uint32_t new_row = ecs_archetype_move_entity_right(
-  //record->archetype, fini_archetype, registry->component_index,
-  //registry->entity_index, record->row);
-  //ecs_map_set(registry->entity_index, (void *)entity,
-              //&(ecs_record_t){fini_archetype, new_row});
+  (*archetype)[a_record].insert(component, record->row);
 }
 
 template <typename ...Components>
@@ -310,7 +302,7 @@ void WorldRegistry::create_component_archetype_mapping() {
   ([&] {
           ArchetypeMap *archetype_mapping = new ArchetypeMap {};
           ComponentId component_id = component_index.id<T>();
-          (*archetype_mapping)[archetype_id] = ArchetypeRecord(archetype->column_value(component_id));
+          (*archetype_mapping)[archetype_id] = ArchetypeRecord{ archetype->column_value(component_id) };
           component_archetype_mapping.put<T>(archetype_mapping);
        } (), ...);
 }
