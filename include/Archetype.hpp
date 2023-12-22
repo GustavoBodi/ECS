@@ -1,4 +1,5 @@
 #pragma once
+#include <exception>
 #include <vector>
 #include <unordered_map>
 #include "Types.hpp"
@@ -14,18 +15,42 @@ struct ArchetypeEdge;
  */
 class Column { // Equivalent to an ecs_type_t
   public:
-  /*!
-   * @brief Overload of the indexing operator for selecting a line (Archetype)
-   * @param index Return the value from the buffer of components
-   */
-  void* operator[](std::size_t index) {
-    return static_cast<void*>(static_cast<char*>(elements) + index * element_size);
-  }
+    Column(std::size_t element_size, ComponentId type) : element_size{ element_size }, type{ type } {
+      elements = static_cast<void*>(new char[max_amount * element_size]);
+    };
+    ~Column() {
+      delete [] static_cast<char*>(elements);
+    }
+    /*!
+     * @brief Overload of the indexing operator for selecting a line (Archetype)
+     * @param index Return the value from the buffer of components
+     */
+    template <typename T>
+    void* get(std::size_t index) {
+      T (*array)[max_amount] = (T(*)[max_amount]) elements;
+      return (*array)[index];
+    }
+
+    /*!
+     * @brief Inserts value in the column
+     * @param component The component to be inserted
+     */
+    template <typename T>
+    std::size_t insert(T component) {
+      if ( count == max_amount )
+        throw std::exception();
+      T (*array)[max_amount] = (T(*)[max_amount]) elements;
+      (*array)[count] = component;
+      count++;
+      return count - 1;
+    }
 
   private:
     void *elements;           // Buffer with the components
     std::size_t element_size; // Size of an element
-    std::size_t count;        // Number of elements
+    std::size_t count { 0 };        // Number of elements
+    std::size_t max_amount { 1000 };
+    ComponentId type;
 };
 
 /*!
@@ -61,10 +86,18 @@ class Archetype {
     Column &operator[] (std::size_t index);
 
     /*!
+     * @brief Returns the current amount of registered intems
+     */
+    std::size_t size() { return _size; }
+
+    std::size_t assign_row() { _size++; return _size; };
+
+    /*!
      * @brief Archetype Destructor
      */
     ~Archetype();
   private:
+    std::size_t _size { 0 };
     ArchetypeId id;
     ArchetypeSignature type;
     std::vector<Column> components;

@@ -47,7 +47,8 @@ class WorldRegistry {
      * @param entity The of the entity to be searched
      * @param component The id of the component to be searched
      */
-    std::optional<void*> get_component(EntityId entity, ComponentId component);
+    template <typename T>
+    std::optional<T> get_component(EntityId entity);
 
     /*!
      * @brief Creates a new entity
@@ -76,6 +77,13 @@ class WorldRegistry {
      * @param entity The id of the entity
      */
     void delete_entity(EntityId entity);
+
+    /*!
+     * @brief Attaches a component to an entity that already fullfills the prerequisites
+     * @param entity The entity id
+     */
+    template <typename T>
+    void attach_component(EntityId entity, T component);
 
     /*!
      * @brief Adds a certain component to an entity
@@ -128,7 +136,7 @@ class WorldRegistry {
      * @brief Relation of a component Id with a relation of an archetype for the column
      * in the database
      */
-    std::unordered_map<ComponentId, ArchetypeMap*> component_archetype_mapping;
+    TypeMapper<ArchetypeMap*> component_archetype_mapping;
 
     /*!
      * @brief Maps a component with its size
@@ -199,8 +207,9 @@ EntityId WorldRegistry::create_entity()
   Archetype *archetype = archetype_index[archetype_id];
   Record *entity_record = new Record {};
   entity_record->archetype = archetype;
-  entity_record->row = 0;
+  entity_record->row = archetype->assign_row();
   entity_index[new_entity] = entity_record;
+  //ArchetypeMap *archetype_map = component_archetype_mapping.find<T...>();
   return new_entity;
 }
 
@@ -226,5 +235,26 @@ template <typename ...T>
 void WorldRegistry::add_archetype(EntityId entity) {
   ArchetypeId arch_id = archetype_ids.find<T...>()->first;
   Archetype *archetype = archetype_index[arch_id];
+}
+
+template <typename T>
+std::optional<T> WorldRegistry::get_component(EntityId entity) {
+  Record *record = entity_index[entity];
+  Archetype *archetype = record->archetype;
+  ArchetypeMap *archetype_map = component_archetype_mapping.find<T>()->second;
+  if (archetype_map->count(archetype->get_id()) == 0) {
+    return std::nullopt;
+  }
+  ArchetypeRecord *a_record = (*archetype_map)[archetype->get_id()];
+  return std::make_optional(static_cast<T>((*archetype)[*a_record].get<T>(record->row)));
+}
+
+template <typename T>
+void WorldRegistry::attach_component(EntityId entity, T component) {
+  Record *record = entity_index[entity];
+  Archetype *archetype = record->archetype;
+  //ArchetypeMap *archetype_map = component_archetype_mapping.find<T>()->second;
+  //ArchetypeRecord *a_record = (*archetype_map)[archetype->get_id()];
+  //(*archetype)[*a_record].insert(component);
 }
 
