@@ -10,17 +10,17 @@ class TypeMapper {
     /*!
      * @brief Type alias for the iterator
      */
-    typedef typename MapperType::iterator iterator;
+    using iterator = typename MapperType::iterator;
 
     /*!
      * @brief Type alias for the const iterator
      */
-    typedef typename MapperType::const_iterator const_iterator;
+    using const_iterator = typename MapperType::const_iterator;
 
     /*!
      * @brief Type alias for the value
      */
-    typedef typename MapperType::value_type value_type;
+    using value_type = typename MapperType::value_type;
 
     /*!
      * @brief Const begin iterator
@@ -81,10 +81,21 @@ class TypeMapper {
     }
 
     /*!
-     * @brief Inserts in the type mapping
+     * @brief Inserts in the type mapping, move semantics
+     */
+    //template <typename ...Key>
+    //uint64_t put(Type &&value) {
+    //  uint64_t id { get_type_id<Key...>() };
+    //  mapper[id] = std::forward<Type>(value);
+    //  ++_size;
+    //  return id;
+    //}
+
+    /*!
+     * @brief Inserts in the type mapping, copy (for pointers)
      */
     template <typename ...Key>
-    uint64_t put(Type &&value) {
+    uint64_t put(Type value) {
       uint64_t id { get_type_id<Key...>() };
       mapper[id] = std::forward<Type>(value);
       ++_size;

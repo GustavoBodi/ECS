@@ -14,7 +14,7 @@ std::optional<const Archetype*> WorldRegistry::add_component(EntityId entity, Co
   Record *record = entity_index[entity];
   ArchetypeSignature &signature = record->archetype->get_type();
   ArchetypeSignature copy = signature;
-  copy.insert(component);
+  copy.push_back(component);
 
   // If there is no archetype, archetype insert vertex in the graph
 

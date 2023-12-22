@@ -1,6 +1,7 @@
 #pragma once
 #include <exception>
 #include <vector>
+#include <algorithm>
 #include <unordered_map>
 #include "Types.hpp"
 
@@ -19,14 +20,14 @@ class Column { // Equivalent to an ecs_type_t
       elements = static_cast<void*>(new char[max_amount * element_size]);
     };
     ~Column() {
-      delete [] static_cast<char*>(elements);
+      //delete [] static_cast<char*>(elements);
     }
     /*!
      * @brief Overload of the indexing operator for selecting a line (Archetype)
      * @param index Return the value from the buffer of components
      */
     template <typename T>
-    void* get(std::size_t index) {
+    T get(std::size_t index) {
       T (*array)[max_amount] = (T(*)[max_amount]) elements;
       return (*array)[index];
     }
@@ -34,12 +35,13 @@ class Column { // Equivalent to an ecs_type_t
     /*!
      * @brief Inserts value in the column
      * @param component The component to be inserted
+     * @tparam Component The component type
      */
-    template <typename T>
-    std::size_t insert(T component) {
+    template <typename Component>
+    std::size_t insert(Component component) {
       if ( count == max_amount )
         throw std::exception();
-      T (*array)[max_amount] = (T(*)[max_amount]) elements;
+      Component (*array)[max_amount] = (Component(*)[max_amount]) elements;
       (*array)[count] = component;
       count++;
       return count - 1;
@@ -63,7 +65,7 @@ class Archetype {
      * @brief The archetype constructor, gets its id from the registry
      * @param id The id of the new archetype
      */
-    Archetype(ArchetypeId id): id{id} {};
+    Archetype(ArchetypeId id, std::vector<ComponentId> ids): id{id}, type{ids} {};
 
     /*!
      * @brief Returns the id from the archetype
@@ -90,7 +92,24 @@ class Archetype {
      */
     std::size_t size() { return _size; }
 
+    /*!
+     * @brief Returns the row for a new entity
+     */
     std::size_t assign_row() { _size++; return _size; };
+
+    /*!
+     * @brief Returns the index of the Component in signature
+     */
+    const std::size_t column_value(ComponentId component) const {
+      return *std::find(type.begin(), type.end(), component);
+    }
+
+    /*!
+     * @brief Creates a new Column with a certain type
+     */
+    void create_column(std::size_t element_size, ComponentId type) {
+      components.push_back(Column(element_size, type));
+    }
 
     /*!
      * @brief Archetype Destructor

@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <vector>
 #include <unordered_set>
 #include <unordered_map>
 
@@ -21,7 +22,7 @@ using EntityId = uint64_t;
 /*!
  * @brief List of an component from archetypes
  */
-using ArchetypeSignature = std::unordered_set<ComponentId>;
+using ArchetypeSignature = std::vector<ComponentId>;
 
 /*!
  * @brief Set of all the archetypes
@@ -36,5 +37,5 @@ using ArchetypeRecord = std::size_t;
 /*!
  * @brief Finding components in archetypes in O(1)
  */
-using ArchetypeMap = std::unordered_map<ArchetypeId, ArchetypeRecord*>;
+using ArchetypeMap = std::unordered_map<ArchetypeId, ArchetypeRecord>;
 

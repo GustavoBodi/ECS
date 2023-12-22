@@ -88,8 +88,11 @@ TEST_CASE("Archetype Id", "[archetype_id]") {
 TEST_CASE("Find Component", "[component_entity]") {
   WorldRegistry registry { 10 };
   ComponentId id_vel = registry.register_component<Velocity>();
-  auto entity = registry.create_entity<Velocity>();
+  EntityId entity = registry.create_entity<Velocity>();
   registry.add_component(entity, id_vel);
   Velocity velocity = Velocity {10, 20};
   registry.attach_component<Velocity>(entity, (Velocity){10, 20});
+  Velocity component_from_registry = registry.get_component<Velocity>(entity).value();
+  REQUIRE(component_from_registry.x == 10);
+  REQUIRE(component_from_registry.y == 20);
 }

@@ -1,10 +1,11 @@
 #pragma once
+#include <iostream>
 #include <optional>
 #include <unordered_map>
 #include "Archetype.hpp"
-#include "Hasher.hpp"
 #include "System.hpp"
 #include "TypeMapper.hpp"
+#include "Types.hpp"
 
 /*!
  * @brief System id representation
@@ -20,6 +21,13 @@ class WorldRegistry {
      * @brief Contructor to the world registry, will create its own archetype graph
      */
     WorldRegistry(uint64_t cycle_reset);
+    
+    /*!
+     * @brief Destructor for the WorldRegistry
+     */
+    ~WorldRegistry() {
+      delete root;
+    }
 
     /*!
      * @brief Registers a new component in the registry
@@ -41,6 +49,13 @@ class WorldRegistry {
      * @param system The id of the system to be disabled
      */
     void disable_system(const SystemId system);
+
+    /*!
+     * @brief Creates an archetype signature from template parameters
+     * @tparam Components The components that represent the archetype
+     */
+    template <typename ...Components>
+    std::vector<ComponentId> make_archetype_signature();
 
     /*!
      * @brief Return the component from the Registry
@@ -125,6 +140,18 @@ class WorldRegistry {
      */
     template <typename ...T>
     ArchetypeId get_archetype_id();
+  
+    /*!
+     * @brief Creates a new mapping from the component to the archetypes
+     */
+    template <typename ...T>
+    void create_component_archetype_mapping();
+
+    /*!
+     * @brief Creates the columns for all the components of the archetype
+     */
+    template <typename ...T>
+    void create_archetype_columns(Archetype *archetype);
 
   private:
     /*!
@@ -166,7 +193,7 @@ class WorldRegistry {
     /*!
      * @brief Root archetype of the graph
      */
-    Archetype *root = new Archetype {0};
+    Archetype *root = new Archetype {0, std::vector<ComponentId>()};
 
     /*!
      * @brief Next entity id
@@ -196,8 +223,7 @@ ComponentId WorldRegistry::register_component() {
 }
 
 template <typename ...T>
-EntityId WorldRegistry::create_entity()
-{
+EntityId WorldRegistry::create_entity() {
   Archetype *root = root;
   EntityId new_entity = next_id++;
   if (!archetype_ids.contains<T...>()) {
@@ -209,15 +235,17 @@ EntityId WorldRegistry::create_entity()
   entity_record->archetype = archetype;
   entity_record->row = archetype->assign_row();
   entity_index[new_entity] = entity_record;
-  //ArchetypeMap *archetype_map = component_archetype_mapping.find<T...>();
   return new_entity;
 }
 
 template <typename ...T>
 std::optional<ArchetypeId> WorldRegistry::register_archetype() {
   ArchetypeId arch_id = archetype_ids.put<T...>(next_id++);
-  Archetype *new_archetype = new Archetype(arch_id);
+  Archetype *new_archetype = new Archetype(arch_id, make_archetype_signature<T...>());
   archetype_index[arch_id] = new_archetype;
+  component_archetype_mapping.put<T...>(new ArchetypeMap());
+  create_component_archetype_mapping<T...>();
+  create_archetype_columns<T...>(new_archetype);
   return std::make_optional(arch_id);
 }
 
@@ -245,16 +273,52 @@ std::optional<T> WorldRegistry::get_component(EntityId entity) {
   if (archetype_map->count(archetype->get_id()) == 0) {
     return std::nullopt;
   }
-  ArchetypeRecord *a_record = (*archetype_map)[archetype->get_id()];
-  return std::make_optional(static_cast<T>((*archetype)[*a_record].get<T>(record->row)));
+  ArchetypeRecord a_record = (*archetype_map)[archetype->get_id()];
+  return std::make_optional(static_cast<T>((*archetype)[a_record].get<T>(record->row)));
 }
 
 template <typename T>
 void WorldRegistry::attach_component(EntityId entity, T component) {
   Record *record = entity_index[entity];
   Archetype *archetype = record->archetype;
-  //ArchetypeMap *archetype_map = component_archetype_mapping.find<T>()->second;
-  //ArchetypeRecord *a_record = (*archetype_map)[archetype->get_id()];
-  //(*archetype)[*a_record].insert(component);
+  ArchetypeMap *archetype_map = component_archetype_mapping.find<T>()->second;
+  ArchetypeRecord a_record = (*archetype_map)[archetype->get_id()];
+  std::cout << a_record << std::endl;
+  auto value = (*archetype);
+  (*archetype)[a_record].insert(component);
+
+  //uint32_t new_row = ecs_archetype_move_entity_right(
+  //record->archetype, fini_archetype, registry->component_index,
+  //registry->entity_index, record->row);
+  //ecs_map_set(registry->entity_index, (void *)entity,
+              //&(ecs_record_t){fini_archetype, new_row});
 }
 
+template <typename ...Components>
+std::vector<ComponentId> WorldRegistry::make_archetype_signature() {
+  std::vector<ComponentId> archetype_signature {};
+  ([&] {
+          archetype_signature.push_back(component_index.id<Components>());
+       } (), ...);
+  return archetype_signature;
+}
+
+template <typename ...T>
+void WorldRegistry::create_component_archetype_mapping() {
+  ArchetypeId archetype_id = archetype_ids.id<T...>();
+  Archetype* archetype = archetype_index[archetype_id];
+  ([&] {
+          ArchetypeMap *archetype_mapping = new ArchetypeMap {};
+          ComponentId component_id = component_index.id<T>();
+          (*archetype_mapping)[archetype_id] = ArchetypeRecord(archetype->column_value(component_id));
+          component_archetype_mapping.put<T>(archetype_mapping);
+       } (), ...);
+}
+
+template <typename ...T>
+void WorldRegistry::create_archetype_columns(Archetype *archetype) {
+
+  ([&] {
+           archetype->create_column(sizeof(T), component_index.id<T>());
+       } (), ...);
+}
