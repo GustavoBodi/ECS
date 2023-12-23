@@ -46,7 +46,7 @@ TEST_CASE("Entity Id", "[entity_id]") {
   for (int i = 0; i < 10; ++i) {
     list[i] = registry.create_entity<Velocity>();
   }
-  REQUIRE(registry.get_id() == 11);
+  REQUIRE(registry.get_id() == 12);
 }
 
 TEST_CASE("Register entity without archetype", "[archetypeless_registering]") {
@@ -56,7 +56,7 @@ TEST_CASE("Register entity without archetype", "[archetypeless_registering]") {
   for (int i = 0; i < 10; ++i) {
     list[i] = registry.create_entity<Velocity>();
   }
-  REQUIRE(registry.get_id() == 11);
+  REQUIRE(registry.get_id() == 12);
 }
 
 TEST_CASE("Id component retrieval from type", "[component_id_retrieval_from_type]") {
@@ -143,21 +143,29 @@ TEST_CASE("Find component (Multiple component archetype)", "[multiple_component_
   REQUIRE(retrieved_velocity2.y == 10);
 }
 
-TEST_CASE("Find component with multiple registered archetypes", "[heterogenes_archetype_retrieval]") {
-
+TEST_CASE("Find component with multiple registered archetypes", "[heterogeneous_archetype_retrieval]") {
   WorldRegistry registry { 10 };
   ComponentId id_vel = registry.register_component<Velocity>();
   ComponentId id_acc = registry.register_component<Acceleration>();
+  ComponentId id_speed = registry.register_component<Speed>();
 
   EntityId entity { registry.create_entity<Acceleration, Velocity>() };
+  EntityId entity3 { registry.create_entity<Acceleration, Velocity>() };
+  EntityId entity4 { registry.create_entity<Acceleration, Velocity>() };
+  // The problem is here -- registering the new entity inteferes with other archetypes
   EntityId entity2 { registry.create_entity<Velocity>() };
+  EntityId entity5 { registry.create_entity<Acceleration, Velocity, Speed>() };
 
   registry.attach_component<Velocity>(entity, (Velocity){10, 20});
-  registry.attach_component<Acceleration>(entity, (Acceleration){20, 70});
+  registry.attach_component<Acceleration>(entity, (Acceleration){30, 70});
   registry.attach_component<Velocity>(entity2, (Velocity){50, 10});
 
+  registry.attach_component<Acceleration>(entity5, (Acceleration){9, 13});
+  registry.attach_component<Velocity>(entity5, (Velocity){5, 8});
+  registry.attach_component<Speed>(entity5, (Speed){1, 2, 3});
+
   Acceleration retrieved_acceleration = registry.get_component<Acceleration>(entity).value();
-  REQUIRE(retrieved_acceleration.x == 20);
+  REQUIRE(retrieved_acceleration.x == 30);
   REQUIRE(retrieved_acceleration.y == 70);
   Velocity retrieved_velocity = registry.get_component<Velocity>(entity).value();
   REQUIRE(retrieved_velocity.x == 10);
@@ -166,4 +174,15 @@ TEST_CASE("Find component with multiple registered archetypes", "[heterogenes_ar
   Velocity retrieved_velocity2 = registry.get_component<Velocity>(entity2).value();
   REQUIRE(retrieved_velocity2.x == 50);
   REQUIRE(retrieved_velocity2.y == 10);
+
+  Velocity retrieved_velocity3 = registry.get_component<Velocity>(entity5).value();
+  Acceleration retrieved_acceleration3 = registry.get_component<Acceleration>(entity5).value();
+  Speed retrieved_speed3 = registry.get_component<Speed>(entity5).value();
+  REQUIRE(retrieved_velocity3.x == 5);
+  REQUIRE(retrieved_velocity3.y == 8);
+  REQUIRE(retrieved_acceleration3.x == 9);
+  REQUIRE(retrieved_acceleration3.y == 13);
+  REQUIRE(retrieved_speed3.x == 1);
+  REQUIRE(retrieved_speed3.y == 2);
+  REQUIRE(retrieved_speed3.z == 3);
 }

@@ -1,9 +1,9 @@
 #pragma once
 #include <exception>
-#include <iostream>
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <iostream>
 #include "Types.hpp"
 
 /*!

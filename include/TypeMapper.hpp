@@ -1,5 +1,6 @@
 #include <unordered_map>
 #include <atomic>
+#include <iostream>
 
 template <typename Type>
 class TypeMapper {
@@ -56,7 +57,9 @@ class TypeMapper {
      * @brief Return true if the map contains the type
      */
     template <typename ...Key>
-    bool contains() const { return mapper.contains(get_type_id<Key...>()); }
+    bool contains() const { 
+      return mapper.contains(get_type_id<Key...>());
+    }
 
     /*!
      * @brief Finds a mapping based on the type
@@ -97,7 +100,7 @@ class TypeMapper {
     template <typename ...Key>
     uint64_t put(Type value) {
       uint64_t id { get_type_id<Key...>() };
-      mapper[id] = std::forward<Type>(value);
+      mapper[id] = value;
       ++_size;
       return id;
     }
