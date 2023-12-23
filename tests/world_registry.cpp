@@ -122,9 +122,11 @@ TEST_CASE("Find component (Multiple component archetype)", "[multiple_component_
   ComponentId id_acc = registry.register_component<Acceleration>();
 
   EntityId entity { registry.create_entity<Acceleration, Velocity>() };
-  EntityId entity2 { registry.create_entity<Velocity>() };
+  EntityId entity2 { registry.create_entity<Acceleration, Velocity>() };
   registry.attach_component<Velocity>(entity, (Velocity){10, 20});
   registry.attach_component<Acceleration>(entity, (Acceleration){20, 70});
+  registry.attach_component<Velocity>(entity2, (Velocity){50, 10});
+  registry.attach_component<Acceleration>(entity2, (Acceleration){80, 90});
 
   Acceleration retrieved_acceleration = registry.get_component<Acceleration>(entity).value();
   REQUIRE(retrieved_acceleration.x == 20);
@@ -132,4 +134,36 @@ TEST_CASE("Find component (Multiple component archetype)", "[multiple_component_
   Velocity retrieved_velocity = registry.get_component<Velocity>(entity).value();
   REQUIRE(retrieved_velocity.x == 10);
   REQUIRE(retrieved_velocity.y == 20);
+
+  Acceleration retrieved_acceleration2 = registry.get_component<Acceleration>(entity2).value();
+  REQUIRE(retrieved_acceleration2.x == 80);
+  REQUIRE(retrieved_acceleration2.y == 90);
+  Velocity retrieved_velocity2 = registry.get_component<Velocity>(entity2).value();
+  REQUIRE(retrieved_velocity2.x == 50);
+  REQUIRE(retrieved_velocity2.y == 10);
+}
+
+TEST_CASE("Find component with multiple registered archetypes", "[heterogenes_archetype_retrieval]") {
+
+  WorldRegistry registry { 10 };
+  ComponentId id_vel = registry.register_component<Velocity>();
+  ComponentId id_acc = registry.register_component<Acceleration>();
+
+  EntityId entity { registry.create_entity<Acceleration, Velocity>() };
+  EntityId entity2 { registry.create_entity<Velocity>() };
+
+  registry.attach_component<Velocity>(entity, (Velocity){10, 20});
+  registry.attach_component<Acceleration>(entity, (Acceleration){20, 70});
+  registry.attach_component<Velocity>(entity2, (Velocity){50, 10});
+
+  Acceleration retrieved_acceleration = registry.get_component<Acceleration>(entity).value();
+  REQUIRE(retrieved_acceleration.x == 20);
+  REQUIRE(retrieved_acceleration.y == 70);
+  Velocity retrieved_velocity = registry.get_component<Velocity>(entity).value();
+  REQUIRE(retrieved_velocity.x == 10);
+  REQUIRE(retrieved_velocity.y == 20);
+
+  Velocity retrieved_velocity2 = registry.get_component<Velocity>(entity2).value();
+  REQUIRE(retrieved_velocity2.x == 50);
+  REQUIRE(retrieved_velocity2.y == 10);
 }
