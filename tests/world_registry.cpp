@@ -115,3 +115,21 @@ TEST_CASE("Find Component (Single Component archetype)", "[single_component_retr
   REQUIRE(component_from_registry_4.x == 60);
   REQUIRE(component_from_registry_4.y == 10);
 }
+
+TEST_CASE("Find component (Multiple component archetype)", "[multiple_component_retrieval]") {
+  WorldRegistry registry { 10 };
+  ComponentId id_vel = registry.register_component<Velocity>();
+  ComponentId id_acc = registry.register_component<Acceleration>();
+
+  EntityId entity { registry.create_entity<Acceleration, Velocity>() };
+  EntityId entity2 { registry.create_entity<Velocity>() };
+  registry.attach_component<Velocity>(entity, (Velocity){10, 20});
+  registry.attach_component<Acceleration>(entity, (Acceleration){20, 70});
+
+  Acceleration retrieved_acceleration = registry.get_component<Acceleration>(entity).value();
+  REQUIRE(retrieved_acceleration.x == 20);
+  REQUIRE(retrieved_acceleration.y == 70);
+  Velocity retrieved_velocity = registry.get_component<Velocity>(entity).value();
+  REQUIRE(retrieved_velocity.x == 10);
+  REQUIRE(retrieved_velocity.y == 20);
+}

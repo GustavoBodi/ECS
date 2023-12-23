@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include <optional>
 #include <unordered_map>
 #include "Archetype.hpp"
@@ -233,7 +232,8 @@ EntityId WorldRegistry::create_entity() {
   Archetype *archetype = archetype_index[archetype_id];
   Record *entity_record = new Record {};
   entity_record->archetype = archetype;
-  entity_record->row = archetype->assign_row();
+  auto row = archetype->assign_row();
+  entity_record->row = row;
   entity_index[new_entity] = entity_record;
   return new_entity;
 }
@@ -243,7 +243,6 @@ std::optional<ArchetypeId> WorldRegistry::register_archetype() {
   ArchetypeId arch_id = archetype_ids.put<T...>(next_id++);
   Archetype *new_archetype = new Archetype(arch_id, make_archetype_signature<T...>());
   archetype_index[arch_id] = new_archetype;
-  component_archetype_mapping.put<T...>(new ArchetypeMap());
   create_component_archetype_mapping<T...>();
   create_archetype_columns<T...>(new_archetype);
   return std::make_optional(arch_id);

@@ -1,5 +1,6 @@
 #pragma once
 #include <exception>
+#include <iostream>
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
@@ -101,7 +102,12 @@ class Archetype {
      * @brief Returns the index of the Component in signature
      */
     const std::size_t column_value(ComponentId component) const {
-      return *std::find(type.begin(), type.end(), component);
+      auto result = std::find(type.begin(), type.end(), component);
+      if (result == type.end()) {
+        throw std::exception();
+      }
+      auto index = std::distance(type.begin(), result);
+      return index;
     }
 
     /*!

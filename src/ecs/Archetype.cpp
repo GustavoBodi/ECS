@@ -17,6 +17,9 @@ ArchetypeSignature& Archetype::get_type()
 
 Column& Archetype::operator[](std::size_t index)
 {
+  if (index >= components.size()) {
+    throw std::exception();
+  }
   return components[index];
 }
 
