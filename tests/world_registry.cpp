@@ -186,3 +186,17 @@ TEST_CASE("Find component with multiple registered archetypes", "[heterogeneous_
   REQUIRE(retrieved_speed3.y == 2);
   REQUIRE(retrieved_speed3.z == 3);
 }
+
+TEST_CASE("Entity deletion", "[entity_delete]") {
+  WorldRegistry registry {1};
+  registry.register_component<Speed>();
+  EntityId entity = registry.create_entity<Speed>();
+  registry.attach_component(entity, (Speed){2, 3, 4});
+  Speed before_deletion = registry.get_component<Speed>(entity).value();
+  REQUIRE(before_deletion.x == 2);
+  REQUIRE(before_deletion.y == 3);
+  REQUIRE(before_deletion.z == 4);
+  registry.delete_entity(entity);
+  std::optional<Speed> result = registry.get_component<Speed>(entity);
+  REQUIRE(result == std::nullopt);
+}

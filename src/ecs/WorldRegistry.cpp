@@ -10,12 +10,16 @@ WorldRegistry::WorldRegistry(uint64_t cycle_reset)
 void WorldRegistry::delete_entity(EntityId entity) {
   std::shared_ptr<Record> record = entity_index[entity];
   std::shared_ptr<Archetype> archetype { record->archetype };
+  if (archetype->size() == 0) {
+    archetype_index.erase(archetype->get_id());
+  }
+  entity_index.erase(entity);
   std::size_t row = record->row;
   ArchetypeSignature signature = archetype->get_type();
   for (ComponentId component_id: signature) {
     std::shared_ptr<ArchetypeMap> archetype_map { component_archetype_mapping[component_id] };
     ArchetypeRecord a_record { (*archetype_map)[archetype->get_id()] };
-    //(*archetype)[a_record].insert(component, record->row);
+    (*archetype)[a_record].delete_component(record->row);
   }
 
 }

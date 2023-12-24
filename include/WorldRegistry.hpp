@@ -264,6 +264,9 @@ void WorldRegistry::add_archetype(EntityId entity) {
 
 template <typename T>
 std::optional<T> WorldRegistry::get_component(EntityId entity) {
+  if (entity_index[entity] == nullptr) {
+    return std::nullopt;
+  }
   std::shared_ptr<Record> record { entity_index[entity] };
   std::shared_ptr<Archetype> archetype { record->archetype };
   ComponentId component_id = get_component_id<T>();

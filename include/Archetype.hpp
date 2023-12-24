@@ -48,6 +48,10 @@ class Column { // Equivalent to an ecs_type_t
      * @brief Removes value from the column
      * @param index The index of the component to be deleted
      */
+    void delete_component(std::size_t index) {
+      if (index == count + 1)
+        count --;
+    }
 
   private:
     /*! 
@@ -105,7 +109,7 @@ class Archetype {
     Column &operator[] (std::size_t index);
 
     /*!
-     * @brief Returns the current amount of registered intems
+     * @brief Returns the current amount of registered items
      */
     std::size_t size() { return _size; }
 
