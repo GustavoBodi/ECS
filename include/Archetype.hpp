@@ -3,7 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
-#include <iostream>
+#include <memory>
 #include "Types.hpp"
 
 /*!
@@ -17,19 +17,15 @@ struct ArchetypeEdge;
  */
 class Column { // Equivalent to an ecs_type_t
   public:
-    Column(std::size_t element_size, ComponentId type) : element_size{ element_size }, type{ type } {
-      elements = static_cast<void*>(new char[max_amount * element_size]);
-    };
-    ~Column() {
-      //delete [] static_cast<char*>(elements);
-    }
+    Column(std::size_t element_size, ComponentId type) : element_size{ element_size }, type{ type }
+     {};
     /*!
      * @brief Overload of the indexing operator for selecting a line (Archetype)
      * @param index Return the value from the buffer of components
      */
     template <typename T>
     T get(std::size_t index) {
-      T (*array)[max_amount] = (T(*)[max_amount]) elements;
+      T (*array)[max_amount] = (T(*)[max_amount]) elements.get();
       return (*array)[index];
     }
 
@@ -42,17 +38,37 @@ class Column { // Equivalent to an ecs_type_t
     std::size_t insert(Component component, std::size_t index) {
       if ( count == max_amount )
         throw std::exception();
-      Component (*array)[max_amount] = (Component(*)[max_amount]) elements;
+      Component (*array)[max_amount] = (Component(*)[max_amount]) (elements.get());
       (*array)[index] = component;
       count++;
       return count - 1;
     }
 
+    /*!
+     * @brief Removes value from the column
+     * @param index The index of the component to be deleted
+     */
+
   private:
-    void *elements;           // Buffer with the components
-    std::size_t element_size; // Size of an element
-    std::size_t count { 0 };        // Number of elements
+    /*! 
+     * @brief Size of an element
+     */
+    std::size_t element_size;
+    /*! 
+     * @brief Number of elements
+     */
+    std::size_t count { 0 };
+    /*! 
+     * @brief Max amount of elements in the array
+     */
     std::size_t max_amount { 1000 };
+    /*! 
+     * @brief Buffer with the components
+     */
+    std::unique_ptr<char[]> elements {new char [max_amount * element_size]};   
+    /*! 
+     * @brief the type of component in the column
+     */
     ComponentId type;
 };
 
@@ -141,7 +157,7 @@ struct ArchetypeEdge {
  * @brief The Record is an archetype relation with its row on the database
  */
 struct Record {
-  Archetype *archetype;
+  std::shared_ptr<Archetype> archetype;
   std::size_t row;
 };
 

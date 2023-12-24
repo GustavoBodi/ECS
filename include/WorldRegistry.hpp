@@ -24,9 +24,7 @@ class WorldRegistry {
     /*!
      * @brief Destructor for the WorldRegistry
      */
-    ~WorldRegistry() {
-      delete root;
-    }
+    ~WorldRegistry() = default;
 
     /*!
      * @brief Registers a new component in the registry
@@ -150,19 +148,19 @@ class WorldRegistry {
      * @brief Creates the columns for all the components of the archetype
      */
     template <typename ...T>
-    void create_archetype_columns(Archetype *archetype);
+    void create_archetype_columns(std::shared_ptr<Archetype> archetype);
 
   private:
     /*!
      * @brief Relation between and entity id with an archetype and a line
      */
-    std::unordered_map<EntityId, Record*> entity_index;
+    std::unordered_map<EntityId, std::shared_ptr<Record>> entity_index;
 
     /*!
      * @brief Relation of a component Id with a relation of an archetype for the column
      * in the database
      */
-    std::unordered_map<ComponentId, ArchetypeMap*> component_archetype_mapping;
+    std::unordered_map<ComponentId, std::shared_ptr<ArchetypeMap>> component_archetype_mapping;
 
     /*!
      * @brief Maps a component with its size
@@ -172,7 +170,7 @@ class WorldRegistry {
     /*!
      * @brief Relation between a system id and a system
      */
-    std::unordered_map<SystemId, System*> system_index;
+    std::unordered_map<SystemId, std::unique_ptr<System>> system_index;
 
     /*!
      * @brief List of disabled systems
@@ -182,7 +180,7 @@ class WorldRegistry {
     /*!
      * @brief Relationship between a list of components and the archetypes
      */
-    std::unordered_map<ArchetypeId, Archetype*> archetype_index;
+    std::unordered_map<ArchetypeId, std::shared_ptr<Archetype>> archetype_index;
 
     /*
      * @brief An archetype id list
@@ -192,7 +190,7 @@ class WorldRegistry {
     /*!
      * @brief Root archetype of the graph
      */
-    Archetype *root = new Archetype {0, std::vector<ComponentId>()};
+    std::shared_ptr<Archetype> root { new Archetype {0, std::vector<ComponentId>()} };
 
     /*!
      * @brief Next entity id
@@ -223,14 +221,13 @@ ComponentId WorldRegistry::register_component() {
 
 template <typename ...Components>
 EntityId WorldRegistry::create_entity() {
-  Archetype *root = root;
   EntityId new_entity = ++next_id;
   if (!archetype_ids.contains<Components...>()) {
     register_archetype<Components...>();
   }
   ArchetypeId archetype_id { archetype_ids.find<Components...>()->second };
-  Archetype *archetype { archetype_index[archetype_id] };
-  Record *entity_record { new Record {} };
+  std::shared_ptr<Archetype> archetype { archetype_index[archetype_id] };
+  std::shared_ptr<Record> entity_record { new Record {} };
   entity_record->archetype = archetype;
   std::size_t row = archetype->assign_row();
   entity_record->row = row;
@@ -242,7 +239,7 @@ template <typename ...T>
 std::optional<ArchetypeId> WorldRegistry::register_archetype() {
   ArchetypeId arch_id = ++next_id;
   archetype_ids.put<T...>(arch_id);
-  Archetype *new_archetype { new Archetype(arch_id, make_archetype_signature<T...>()) };
+  std::shared_ptr<Archetype> new_archetype { new Archetype(arch_id, make_archetype_signature<T...>()) };
   archetype_index[arch_id] = new_archetype;
   create_component_archetype_mapping<T...>();
   create_archetype_columns<T...>(new_archetype);
@@ -262,15 +259,15 @@ ArchetypeId WorldRegistry::get_archetype_id() {
 template <typename ...T>
 void WorldRegistry::add_archetype(EntityId entity) {
   ArchetypeId arch_id { archetype_ids.find<T...>()->second };
-  Archetype *archetype { archetype_index[arch_id] };
+  std::shared_ptr<Archetype> archetype { archetype_index[arch_id] };
 }
 
 template <typename T>
 std::optional<T> WorldRegistry::get_component(EntityId entity) {
-  Record *record { entity_index[entity] };
-  Archetype *archetype { record->archetype };
+  std::shared_ptr<Record> record { entity_index[entity] };
+  std::shared_ptr<Archetype> archetype { record->archetype };
   ComponentId component_id = get_component_id<T>();
-  ArchetypeMap *archetype_map { component_archetype_mapping[component_id] };
+  std::shared_ptr<ArchetypeMap> archetype_map { component_archetype_mapping[component_id] };
   if (archetype_map->count(archetype->get_id()) == 0) {
     return std::nullopt;
   }
@@ -280,10 +277,10 @@ std::optional<T> WorldRegistry::get_component(EntityId entity) {
 
 template <typename T>
 void WorldRegistry::attach_component(EntityId entity, T component) {
-  Record *record { entity_index[entity] };
-  Archetype *archetype { record->archetype };
+  std::shared_ptr<Record> record { entity_index[entity] };
+  std::shared_ptr<Archetype> archetype { record->archetype };
   ComponentId component_id = get_component_id<T>();
-  ArchetypeMap *archetype_map { component_archetype_mapping[component_id] };
+  std::shared_ptr<ArchetypeMap> archetype_map { component_archetype_mapping[component_id] };
   ArchetypeRecord a_record { (*archetype_map)[archetype->get_id()] };
   (*archetype)[a_record].insert(component, record->row);
 }
@@ -300,23 +297,23 @@ std::vector<ComponentId> WorldRegistry::make_archetype_signature() {
 template <typename ...T>
 void WorldRegistry::create_component_archetype_mapping() {
   ArchetypeId archetype_id = archetype_ids.find<T...>()->second;
-  Archetype* archetype = archetype_index[archetype_id];
+  std::shared_ptr<Archetype> archetype = archetype_index[archetype_id];
   ([&] {
           ComponentId component_id = get_component_id<T>();
           ArchetypeRecord new_record { archetype->column_value(component_id)};
           if (component_archetype_mapping[component_id] == nullptr) {
-            ArchetypeMap *archetype_mapping = new ArchetypeMap {};
+            std::shared_ptr<ArchetypeMap> archetype_mapping { new ArchetypeMap {} };
             (*archetype_mapping)[archetype_id] = new_record;
             component_archetype_mapping[component_id] = archetype_mapping;
           } else {
-            ArchetypeMap *old_map = component_archetype_mapping[component_id];
+            std::shared_ptr<ArchetypeMap> old_map = component_archetype_mapping[component_id];
             (*old_map)[archetype_id] = new_record;
           }
        } (), ...);
 }
 
 template <typename ...T>
-void WorldRegistry::create_archetype_columns(Archetype *archetype) {
+void WorldRegistry::create_archetype_columns(std::shared_ptr<Archetype> archetype) {
   ([&] {
            archetype->create_column(sizeof(T), get_component_id<T>());
        } (), ...);
