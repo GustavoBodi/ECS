@@ -220,10 +220,16 @@ TEST_CASE("Insertion on graph", "[graph_insertion]") {
   auto entity6 = registry.create_entity<Acceleration, Velocity, Acceleration>();
   std::vector<ComponentId> graph;
   registry.get_dependency_graph(graph);
+
   REQUIRE(graph.size() == 9);
+
   REQUIRE(std::find(graph.begin(), graph.end(), speed) != graph.end());
   REQUIRE(std::find(graph.begin(), graph.end(), velocity) != graph.end());
   REQUIRE(std::find(graph.begin(), graph.end(), acceleration) != graph.end());
   REQUIRE(std::find(graph.begin(), graph.end(), gravity) != graph.end());
 
+  REQUIRE(std::count(graph.begin(), graph.end(), speed) == 1);
+  REQUIRE(std::count(graph.begin(), graph.end(), velocity) == 2);
+  REQUIRE(std::count(graph.begin(), graph.end(), acceleration) == 4);
+  REQUIRE(std::count(graph.begin(), graph.end(), gravity) == 2);
 }

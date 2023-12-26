@@ -6,6 +6,7 @@
 #include <memory>
 #include "Types.hpp"
 
+
 /*!
  * @brief Forward declaration of the archetypes graph
  */
@@ -190,3 +191,7 @@ struct Record {
   std::size_t row;
 };
 
+/*
+ * @brief Alias for Archetype pointer
+ */
+using archetype_t = std::shared_ptr<Archetype>;

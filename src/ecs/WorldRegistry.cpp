@@ -10,7 +10,7 @@ WorldRegistry::WorldRegistry(uint64_t cycle_reset)
 
 void WorldRegistry::delete_entity(EntityId entity) {
   std::shared_ptr<Record> record = entity_index[entity];
-  std::shared_ptr<Archetype> archetype { record->archetype };
+  archetype_t archetype { record->archetype };
   if (archetype->size() == 0) {
     archetype_index.erase(archetype->get_id());
   }
@@ -66,12 +66,12 @@ uint64_t WorldRegistry::get_id() {
   return next_id;
 }
 
-void WorldRegistry::add_node(std::shared_ptr<Archetype> archetype) {
+void WorldRegistry::add_node(archetype_t archetype) {
   std::vector<ComponentId> signature = archetype->get_type();
   std::vector<ComponentId> new_signature;
-  std::shared_ptr<Archetype> last = root;
+  archetype_t last = root;
   ComponentId last_component = signature[0];
-  std::shared_ptr<Archetype> it = root;
+  archetype_t it = root;
   std::size_t depth = 0;
   for (ComponentId component: signature) {
     new_signature.push_back(component);
@@ -79,36 +79,39 @@ void WorldRegistry::add_node(std::shared_ptr<Archetype> archetype) {
     if (!edges.contains(component)) {
       std::shared_ptr<ArchetypeEdge> new_edge ( new ArchetypeEdge() );
       std::tuple<ComponentId, std::size_t> component_depth = std::make_tuple(component, depth);
-      if (depth_index[component_depth] == nullptr) {
-        std::shared_ptr<Archetype> new_arch (new Archetype(next_id, new_signature));
-        depth_index[component_depth] = new_arch;
+      std::tuple<archetype_t, std::size_t> indexed_tuple = depth_index[component_depth];
+      if (std::get<archetype_t>(indexed_tuple) == nullptr) {
+        archetype_t new_arch (new Archetype(next_id, new_signature));
+        depth_index[component_depth] = std::make_tuple(new_arch, 1);
         ++next_id;
         new_edge->add = std::make_tuple(new_arch, component);
       } else {
-        std::shared_ptr<Archetype> new_arch = depth_index[component_depth];
+        auto new_arch = std::get<archetype_t>(indexed_tuple);
         new_edge->add = std::make_tuple(new_arch, component);
+        auto new_entry = std::make_tuple(new_arch, std::get<std::size_t>(indexed_tuple) + 1);
+        depth_index[component_depth] = new_entry;
       }
       new_edge->remove = std::make_tuple(last, last_component);
       edges[component] = new_edge;
     }
     last_component = component;
     last = it;
-    it = std::get<std::shared_ptr<Archetype>>(edges.find(component)->second->add);
+    it = std::get<archetype_t>(edges.find(component)->second->add);
     depth++;
   }
 }
 
-void WorldRegistry::list_each(std::shared_ptr<Archetype> archetype, std::vector<ComponentId> &input,
+void WorldRegistry::list_each(archetype_t archetype, std::vector<ComponentId> &input,
     std::vector<Archetype*> &visited ) {
   auto edges = archetype->get_edges();
   for (auto edge: edges) {
-    std::shared_ptr<Archetype> next_archetype = std::get<std::shared_ptr<Archetype>>(edge.second->add);
+    archetype_t next_archetype = std::get<archetype_t>(edge.second->add);
     ComponentId component_id = std::get<ComponentId>(edge.second->add);
     if (std::find(visited.begin(), visited.end(), next_archetype.get()) != visited.end()) {
       return;
     }
     input.push_back(component_id);
     visited.push_back(next_archetype.get());
-    list_each(std::get<std::shared_ptr<Archetype>>(edge.second->add), input, visited);
+    list_each(std::get<archetype_t>(edge.second->add), input, visited);
   }
 }
