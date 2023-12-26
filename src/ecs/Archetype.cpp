@@ -5,7 +5,7 @@ ArchetypeId Archetype::get_id()
   return id;
 }
 
-std::unordered_map<ComponentId, ArchetypeEdge>& Archetype::get_edges()
+std::unordered_map<ComponentId, std::shared_ptr<ArchetypeEdge>> &Archetype::get_edges()
 {
   return edges;
 }

@@ -96,7 +96,7 @@ class Archetype {
     /*!
      * @brief Returns a reference to the edges of the archetype
      */
-    std::unordered_map<ComponentId, ArchetypeEdge>& get_edges();
+    std::unordered_map<ComponentId, std::shared_ptr<ArchetypeEdge>> &get_edges();
 
     /*!
      * @brief Returns the archetype signature
@@ -114,9 +114,33 @@ class Archetype {
     std::size_t size() { return _size; }
 
     /*!
+     * @brief Returns true if there is not dependent type left
+     */
+    bool is_empty() {
+      return dependent_type == 0;
+    }
+
+    /*!
+     * @brief Removes a dependent entity
+     */
+    void remove_dependent_type() {
+      --dependent_type;
+    }
+
+    /*!
+     * @brief Inserts a new dependent type
+     */
+    void insert_dependent_type() {
+      ++dependent_type;
+    }
+
+    /*!
      * @brief Returns the row for a new entity
      */
-    std::size_t assign_row() { _size++; return _size; };
+    std::size_t assign_row() { 
+      _size++;
+      return _size; 
+    };
 
     /*!
      * @brief Returns the index of the Component in signature
@@ -143,18 +167,19 @@ class Archetype {
     ~Archetype();
   private:
     std::size_t _size { 0 };
+    std::size_t dependent_type { 0 };
     ArchetypeId id;
     ArchetypeSignature type;
     std::vector<Column> components;
-    std::unordered_map<ComponentId, ArchetypeEdge> edges;
+    std::unordered_map<ComponentId, std::shared_ptr<ArchetypeEdge>> edges;
 };
 
 /*!
  * @brief Connections to other Archetypes
  */
 struct ArchetypeEdge {
-  Archetype *add;
-  Archetype *remove;
+  std::tuple<std::shared_ptr<Archetype>, ComponentId> add;
+  std::tuple<std::shared_ptr<Archetype>, ComponentId> remove;
 };
 
 /*!

@@ -1,7 +1,9 @@
 #pragma once
 #include <optional>
 #include <unordered_map>
+#include "GraphController.hpp"
 #include "Archetype.hpp"
+#include "Hasher.hpp"
 #include "System.hpp"
 #include "TypeMapper.hpp"
 #include "Types.hpp"
@@ -112,6 +114,19 @@ class WorldRegistry {
     std::optional<const Archetype*> remove_component(EntityId entity, ComponentId component);
 
     /*!
+     * @brief Get archetype dependency graph
+     */
+    void get_dependency_graph(std::vector<ComponentId> &input) {
+      std::vector<Archetype*> visited;
+      list_each(root, input, visited);
+    }
+
+    /*!
+     * @brief Recursive function for showing each of the graph dependencies
+     */
+    void list_each(std::shared_ptr<Archetype> archetype, std::vector<ComponentId> &input, std::vector<Archetype*> &visited);
+
+    /*!
      * @brief Ticks the entire registry
      */
     void tick();
@@ -150,6 +165,11 @@ class WorldRegistry {
     template <typename ...T>
     void create_archetype_columns(std::shared_ptr<Archetype> archetype);
 
+    /*!
+     * @brief Adds a node to the graph
+     */
+    void add_node(std::shared_ptr<Archetype> archetype);
+
   private:
     /*!
      * @brief Relation between and entity id with an archetype and a line
@@ -182,7 +202,7 @@ class WorldRegistry {
      */
     std::unordered_map<ArchetypeId, std::shared_ptr<Archetype>> archetype_index;
 
-    /*
+    /*!
      * @brief An archetype id list
      */
     TypeMapper<ArchetypeId> archetype_ids;
@@ -190,7 +210,23 @@ class WorldRegistry {
     /*!
      * @brief Root archetype of the graph
      */
+
     std::shared_ptr<Archetype> root { new Archetype {0, std::vector<ComponentId>()} };
+
+    /*!
+     * @brief Representation of a component depth in the graph
+     */
+    using depth = std::tuple<ComponentId, std::size_t>;
+
+    /*!
+     * @brief All the registered components and their depth in the graph
+     */
+    std::unordered_map<depth, std::shared_ptr<Archetype>> depth_index;
+
+    /*!
+     * @brief The controller for the graph operations
+     */
+    GraphController graph {root};
 
     /*!
      * @brief Next entity id
@@ -241,6 +277,7 @@ std::optional<ArchetypeId> WorldRegistry::register_archetype() {
   archetype_ids.put<T...>(arch_id);
   std::shared_ptr<Archetype> new_archetype { new Archetype(arch_id, make_archetype_signature<T...>()) };
   archetype_index[arch_id] = new_archetype;
+  add_node(new_archetype);
   create_component_archetype_mapping<T...>();
   create_archetype_columns<T...>(new_archetype);
   return std::make_optional(arch_id);
@@ -321,3 +358,4 @@ void WorldRegistry::create_archetype_columns(std::shared_ptr<Archetype> archetyp
            archetype->create_column(sizeof(T), get_component_id<T>());
        } (), ...);
 }
+

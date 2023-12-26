@@ -1,3 +1,6 @@
+#pragma once
+#include <iostream>
+#include <memory>
 #include "Archetype.hpp"
 
 struct Edge {
@@ -7,17 +10,16 @@ struct Edge {
 
 class GraphController {
   public:
-    GraphController(Archetype *root);
-    ~GraphController();
-    std::size_t len();
-    void add_edge();
-    void remove_edge();
-    void add_vertex();
-    void remove_vertex();
+    GraphController(std::shared_ptr<Archetype> root): root {root} {};
 
-    template <typename ...T>
-    void list_each();
+    ~GraphController() = default;
+
+    std::size_t len();
+
+    void remove_node(std::shared_ptr<Archetype> archetype, ArchetypeId archetype_id);
+
 
   private:
-    Archetype *root;
+    std::unordered_set<ArchetypeId> all_archetypes;
+    std::shared_ptr<Archetype> root;
 };

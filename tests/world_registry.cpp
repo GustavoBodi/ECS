@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include "WorldRegistry.hpp"
 
@@ -15,6 +16,10 @@ struct Speed {
   int x;
   int y;
   int z;
+};
+
+struct Gravity {
+  float g;
 };
 
 TEST_CASE("Component count", "[component_count]") {
@@ -46,7 +51,7 @@ TEST_CASE("Entity Id", "[entity_id]") {
   for (int i = 0; i < 10; ++i) {
     list[i] = registry.create_entity<Velocity>();
   }
-  REQUIRE(registry.get_id() == 12);
+  REQUIRE(registry.get_id() == 13);
 }
 
 TEST_CASE("Register entity without archetype", "[archetypeless_registering]") {
@@ -56,7 +61,7 @@ TEST_CASE("Register entity without archetype", "[archetypeless_registering]") {
   for (int i = 0; i < 10; ++i) {
     list[i] = registry.create_entity<Velocity>();
   }
-  REQUIRE(registry.get_id() == 12);
+  REQUIRE(registry.get_id() == 13);
 }
 
 TEST_CASE("Id component retrieval from type", "[component_id_retrieval_from_type]") {
@@ -199,4 +204,26 @@ TEST_CASE("Entity deletion", "[entity_delete]") {
   registry.delete_entity(entity);
   std::optional<Speed> result = registry.get_component<Speed>(entity);
   REQUIRE(result == std::nullopt);
+}
+
+TEST_CASE("Insertion on graph", "[graph_insertion]") {
+  WorldRegistry registry {1};
+  ComponentId speed = registry.register_component<Speed>();
+  ComponentId velocity = registry.register_component<Velocity>();
+  ComponentId acceleration = registry.register_component<Acceleration>();
+  ComponentId gravity = registry.register_component<Gravity>();
+  auto entity = registry.create_entity<Speed, Acceleration, Velocity>();
+  auto entity2 = registry.create_entity<Speed, Gravity, Velocity, Acceleration>();
+  auto entity3 = registry.create_entity<Speed, Gravity>();
+  auto entity4 = registry.create_entity<Gravity>();
+  auto entity5 = registry.create_entity<Gravity, Velocity, Acceleration>();
+  auto entity6 = registry.create_entity<Acceleration, Velocity, Acceleration>();
+  std::vector<ComponentId> graph;
+  registry.get_dependency_graph(graph);
+  REQUIRE(graph.size() == 9);
+  REQUIRE(std::find(graph.begin(), graph.end(), speed) != graph.end());
+  REQUIRE(std::find(graph.begin(), graph.end(), velocity) != graph.end());
+  REQUIRE(std::find(graph.begin(), graph.end(), acceleration) != graph.end());
+  REQUIRE(std::find(graph.begin(), graph.end(), gravity) != graph.end());
+
 }

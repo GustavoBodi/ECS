@@ -1,8 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include "Hasher.hpp"
 
-TEST_CASE("Hashing correctness", "[hash]") {
-  Hasher<uint64_t> hasher;
+TEST_CASE("Vector Hashing correctness", "[tuple_hash]") {
+  VectorHasher<uint64_t> hasher;
   std::vector<uint64_t> vec1 {1, 4, 6, 3, 2};
   std::vector<uint64_t> vec2 {1, 4, 6, 3, 2};
   std::vector<uint64_t> vec3 {1, 4, 6, 3, 2, 10};

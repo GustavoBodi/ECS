@@ -1,13 +1,16 @@
 #pragma once
+#include <tuple>
 #include <type_traits>
 #include <vector>
+#include <boost/functional/hash.hpp>
+#include <tuple>
 #include <cstdint>
 
 /*!
  * @brief Template class for hashing vectors of some kind of id
  */
 template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-class Hasher {
+class VectorHasher {
   public:
     /*!
      * @brief Overloaded function call for satisfying std::hash
@@ -24,3 +27,17 @@ class Hasher {
     }
 };
 
+
+namespace std
+{
+
+template<typename... T>
+struct hash<tuple<T...>>
+{
+    size_t operator()(tuple<T...> const& arg) const noexcept
+    {
+        return boost::hash_value(arg);
+    }
+};
+
+}
