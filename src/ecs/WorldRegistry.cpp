@@ -24,22 +24,6 @@ void WorldRegistry::delete_entity(EntityId entity) {
   }
 }
 
-std::optional<const Archetype*> WorldRegistry::add_component(EntityId entity, ComponentId component) {
-  // Find the record
-  std::shared_ptr<Record> record = entity_index[entity];
-  ArchetypeSignature &signature = record->archetype->get_type();
-  ArchetypeSignature copy = signature;
-  copy.push_back(component);
-
-  // If there is no archetype, archetype insert vertex in the graph
-
-  // Add Archetype to component list of archetypes
-
-  // Move entity to the right of the graph
-
-  // Insert into the entity index
-}
-
 std::optional<const Archetype*> WorldRegistry::remove_component(EntityId entity, ComponentId component) {}
 
 void WorldRegistry::disable_system(const SystemId system) {
@@ -66,8 +50,12 @@ uint64_t WorldRegistry::get_id() {
   return next_id;
 }
 
-void WorldRegistry::add_node(archetype_t archetype) {
-  std::vector<ComponentId> signature = archetype->get_type();
+archetype_t WorldRegistry::add_node(archetype_t archetype) {
+  return add_node(archetype->get_type());
+}
+
+archetype_t WorldRegistry::add_node(std::vector<ComponentId> &type) {
+  std::vector<ComponentId> &signature = type;
   std::vector<ComponentId> new_signature;
   archetype_t last = root;
   ComponentId last_component = signature[0];
@@ -99,6 +87,7 @@ void WorldRegistry::add_node(archetype_t archetype) {
     it = std::get<archetype_t>(edges.find(component)->second->add);
     depth++;
   }
+  return it;
 }
 
 void WorldRegistry::list_each(archetype_t archetype, std::vector<ComponentId> &input,
@@ -114,4 +103,57 @@ void WorldRegistry::list_each(archetype_t archetype, std::vector<ComponentId> &i
     visited.push_back(next_archetype.get());
     list_each(std::get<archetype_t>(edge.second->add), input, visited);
   }
+}
+
+void WorldRegistry::create_archetype_columns(archetype_t archetype) {
+  for (ComponentId component: archetype->get_type()) {
+    archetype->create_column(component_size_index[component], component);
+  }
+}
+
+void WorldRegistry::create_component_archetype_mapping(archetype_t archetype) {
+  for (ComponentId component_id: archetype->get_type()) {
+    ArchetypeRecord new_record { archetype->column_value(component_id)};
+    if (component_archetype_mapping[component_id] == nullptr) {
+      std::shared_ptr<ArchetypeMap> archetype_mapping { new ArchetypeMap {} };
+      (*archetype_mapping)[archetype->get_id()] = new_record;
+      component_archetype_mapping[component_id] = archetype_mapping;
+    } else {
+      std::shared_ptr<ArchetypeMap> old_map = component_archetype_mapping[component_id];
+      (*old_map)[archetype->get_id()] = new_record;
+    }
+  }
+}
+
+void WorldRegistry::attach_component(EntityId entity, ComponentId component_id, std::vector<uint8_t> *component) {
+  std::shared_ptr<Record> record { entity_index[entity] };
+  archetype_t archetype { record->archetype };
+  std::shared_ptr<ArchetypeMap> archetype_map { component_archetype_mapping[component_id] };
+  ArchetypeRecord a_record { (*archetype_map)[archetype->get_id()] };
+  (*archetype)[a_record].insert(component, record->row);
+}
+
+std::vector<uint8_t> *WorldRegistry::get_component(EntityId entity, ComponentId component_id) {
+  if (entity_index[entity] == nullptr) {
+    return nullptr;
+  }
+  std::shared_ptr<Record> record { entity_index[entity] };
+  archetype_t archetype { record->archetype };
+  std::shared_ptr<ArchetypeMap> archetype_map { component_archetype_mapping[component_id] };
+  if (archetype_map->count(archetype->get_id()) == 0) {
+    return nullptr;
+  }
+  ArchetypeRecord a_record { (*archetype_map)[archetype->get_id()] };
+  return (*archetype)[a_record].get(record->row);
+}
+
+archetype_t WorldRegistry::register_archetype(std::vector<ComponentId> &components) {
+  ArchetypeId arch_id = ++next_id;
+  //archetype_ids.put<T...>(arch_id);
+  archetype_t new_archetype { new Archetype(arch_id, components) };
+  archetype_index[arch_id] = new_archetype;
+  add_node(new_archetype);
+  create_component_archetype_mapping(new_archetype);
+  create_archetype_columns(new_archetype);
+  return new_archetype;
 }

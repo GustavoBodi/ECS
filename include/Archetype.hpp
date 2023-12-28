@@ -2,6 +2,8 @@
 #include <exception>
 #include <vector>
 #include <algorithm>
+#include <iostream>
+#include <cstring>
 #include <unordered_map>
 #include <memory>
 #include "Types.hpp"
@@ -20,6 +22,7 @@ class Column { // Equivalent to an ecs_type_t
   public:
     Column(std::size_t element_size, ComponentId type) : element_size{ element_size }, type{ type }
      {};
+
     /*!
      * @brief Overload of the indexing operator for selecting a line (Archetype)
      * @param index Return the value from the buffer of components
@@ -28,6 +31,18 @@ class Column { // Equivalent to an ecs_type_t
     T get(std::size_t index) {
       T (*array)[max_amount] = (T(*)[max_amount]) elements.get();
       return (*array)[index];
+    }
+
+    /*!
+     * @brief Overload of the indexing operator for selecting a line (Archetype)
+     * @param index Return the value from the buffer of components
+     */
+    std::vector<uint8_t> *get(std::size_t index) {
+      std::vector<uint8_t> *copy = new std::vector<uint8_t>();
+      for (int i = 0; i < element_size; ++i) {
+        copy->push_back(elements.get()[(index) * element_size + i]);
+      }
+      return copy;
     }
 
     /*!
@@ -45,6 +60,18 @@ class Column { // Equivalent to an ecs_type_t
       return count - 1;
     }
 
+    std::size_t insert(std::vector<uint8_t> *component, std::size_t index) {
+      if ( count == max_amount )
+        throw std::exception();
+      int i = 0;
+      for (uint8_t element: *component) {
+        elements.get()[(index) * element_size + i] = element;
+        ++i;
+      }
+      count++;
+      return count - 1;
+    }
+
     /*!
      * @brief Removes value from the column
      * @param index The index of the component to be deleted
@@ -55,25 +82,19 @@ class Column { // Equivalent to an ecs_type_t
     }
 
   private:
-    /*! 
-     * @brief Size of an element
-     */
+    /*! @brief Size of an element */
     std::size_t element_size;
-    /*! 
-     * @brief Number of elements
-     */
+
+    /*! @brief Number of elements */
     std::size_t count { 0 };
-    /*! 
-     * @brief Max amount of elements in the array
-     */
+
+    /*! @brief Max amount of elements in the array */
     std::size_t max_amount { 1000 };
-    /*! 
-     * @brief Buffer with the components
-     */
-    std::unique_ptr<char[]> elements {new char [max_amount * element_size]};   
-    /*! 
-     * @brief the type of component in the column
-     */
+
+    /*! @brief Buffer with the components */
+    std::shared_ptr<uint8_t[]> elements {new uint8_t [max_amount * element_size]};
+
+    /*! @brief the type of component in the column */
     ComponentId type;
 };
 

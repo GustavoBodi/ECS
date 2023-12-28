@@ -233,3 +233,26 @@ TEST_CASE("Insertion on graph", "[graph_insertion]") {
   REQUIRE(std::count(graph.begin(), graph.end(), acceleration) == 4);
   REQUIRE(std::count(graph.begin(), graph.end(), gravity) == 2);
 }
+
+TEST_CASE("Adding component to entity", "[add_component]") {
+  WorldRegistry registry {1};
+  ComponentId speed = registry.register_component<Speed>();
+  ComponentId velocity = registry.register_component<Velocity>();
+  ComponentId acceleration = registry.register_component<Acceleration>();
+  EntityId entity = registry.create_entity<Speed, Velocity>();
+  registry.attach_component(entity, (Speed){2, 3, 4});
+  registry.attach_component(entity, (Velocity){1, 5});
+  registry.add_component<Acceleration>(entity);
+  registry.attach_component(entity, (Acceleration){10, 40});
+
+  Speed speed_result = registry.get_component<Speed>(entity).value();
+  REQUIRE(speed_result.x == 2);
+  REQUIRE(speed_result.y == 3);
+  REQUIRE(speed_result.z == 4);
+  Velocity velocity_result = registry.get_component<Velocity>(entity).value();
+  REQUIRE(velocity_result.x == 1);
+  REQUIRE(velocity_result.y == 5);
+  Acceleration acceleration_result = registry.get_component<Acceleration>(entity).value();
+  REQUIRE(acceleration_result.x == 10);
+  REQUIRE(acceleration_result.y == 40);
+}
