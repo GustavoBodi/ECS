@@ -130,7 +130,8 @@ class WorldRegistry {
      * @param entity EntityId that will have its component removed
      * @param component The representation of the component to be removed
      */
-    std::optional<const Archetype*> remove_component(EntityId entity, ComponentId component);
+    template<typename T>
+    archetype_t remove_component(EntityId entity);
 
     /*!
      * @brief Get archetype dependency graph
@@ -185,7 +186,7 @@ class WorldRegistry {
     /*!
      * @brief Adds a node to the graph
      */
-    archetype_t add_node(std::vector<ComponentId> &type);
+    archetype_t add_node(std::vector<ComponentId> type);
 
     /*!
      * @brief Adds a node to the graph
@@ -282,6 +283,7 @@ class WorldRegistry {
 template <typename Component>
 ComponentId WorldRegistry::get_component_id() {
   ComponentId id = component_index.find<Component>()->second;
+  return id;
 }
 
 template <typename Component>
@@ -321,6 +323,7 @@ std::optional<ArchetypeId> WorldRegistry::register_archetype() {
 template <typename Func, std::enable_if_t<std::is_function_v<Func>>, typename ...T>
 const SystemId WorldRegistry::register_system(Func system) {
   SystemId id { next_id++ };
+  return id;
 }
 
 template <typename ...T>
@@ -374,6 +377,7 @@ archetype_t WorldRegistry::add_component(EntityId entity) {
   std::shared_ptr<Record> record = entity_index[entity];
   archetype_t &current_archetype = record->archetype;
   std::vector<ComponentId> new_signature = current_archetype->get_type();
+  std::vector<ComponentId> old_signature = current_archetype->get_type();
   ComponentId component = get_component_id<T>();
   new_signature.push_back(component);
   archetype_t new_archetype;
@@ -384,16 +388,50 @@ archetype_t WorldRegistry::add_component(EntityId entity) {
     new_archetype = std::get<archetype_t>(indexed_archetype->add);
   }
   std::vector<std::vector<uint8_t>*> components;
-  for (ComponentId component: current_archetype->get_type()) {
+  for (ComponentId component: old_signature) {
     components.push_back(get_component(entity, component));
   }
-  std::cout << "Got components" << std::endl;
   current_archetype->remove_dependent_type();
   new_archetype->insert_dependent_type();
   record->archetype = new_archetype;
   record->row = new_archetype->assign_row();
   int i = 0;
-  for (ComponentId component: current_archetype->get_type()) {
+  for (ComponentId component: old_signature) {
+    attach_component(entity, component, components[i]);
+    ++i;
+  }
+  for (auto component: components) {
+    delete component;
+  }
+  return new_archetype;
+}
+
+template<typename T>
+archetype_t WorldRegistry::remove_component(EntityId entity) {
+  std::shared_ptr<Record> record = entity_index[entity];
+  archetype_t &current_archetype = record->archetype;
+  std::vector<ComponentId> new_signature = current_archetype->get_type();
+  std::vector<ComponentId> old_signature = current_archetype->get_type();
+  ComponentId component = get_component_id<T>();
+  auto comp_it = std::find(new_signature.begin(), new_signature.end(), component);
+  new_signature.erase(comp_it);
+  archetype_t new_archetype;
+  auto indexed_archetype = current_archetype->get_edges()[component];
+  if (indexed_archetype == nullptr) {
+    new_archetype = register_archetype(new_signature);
+  } else {
+    new_archetype = std::get<archetype_t>(indexed_archetype->remove);
+  }
+  std::vector<std::vector<uint8_t>*> components;
+  for (ComponentId component: new_signature) {
+    components.push_back(get_component(entity, component));
+  }
+  current_archetype->remove_dependent_type();
+  new_archetype->insert_dependent_type();
+  record->archetype = new_archetype;
+  record->row = new_archetype->assign_row();
+  int i = 0;
+  for (ComponentId component: new_signature) {
     attach_component(entity, component, components[i]);
     ++i;
   }

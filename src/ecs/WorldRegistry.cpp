@@ -24,8 +24,6 @@ void WorldRegistry::delete_entity(EntityId entity) {
   }
 }
 
-std::optional<const Archetype*> WorldRegistry::remove_component(EntityId entity, ComponentId component) {}
-
 void WorldRegistry::disable_system(const SystemId system) {
   disabled_systems_index.insert(system);
 }
@@ -54,7 +52,7 @@ archetype_t WorldRegistry::add_node(archetype_t archetype) {
   return add_node(archetype->get_type());
 }
 
-archetype_t WorldRegistry::add_node(std::vector<ComponentId> &type) {
+archetype_t WorldRegistry::add_node(std::vector<ComponentId> type) {
   std::vector<ComponentId> &signature = type;
   std::vector<ComponentId> new_signature;
   archetype_t last = root;
@@ -63,7 +61,7 @@ archetype_t WorldRegistry::add_node(std::vector<ComponentId> &type) {
   std::size_t depth = 0;
   for (ComponentId component: signature) {
     new_signature.push_back(component);
-    std::unordered_map<ComponentId, std::shared_ptr<ArchetypeEdge>> &edges = it->get_edges();
+    std::map<ComponentId, std::shared_ptr<ArchetypeEdge>> &edges = it->get_edges();
     if (!edges.contains(component)) {
       std::shared_ptr<ArchetypeEdge> new_edge ( new ArchetypeEdge() );
       std::tuple<ComponentId, std::size_t> component_depth = std::make_tuple(component, depth);
@@ -127,8 +125,14 @@ void WorldRegistry::create_component_archetype_mapping(archetype_t archetype) {
 
 void WorldRegistry::attach_component(EntityId entity, ComponentId component_id, std::vector<uint8_t> *component) {
   std::shared_ptr<Record> record { entity_index[entity] };
+  if (record == nullptr) {
+    return;
+  }
   archetype_t archetype { record->archetype };
   std::shared_ptr<ArchetypeMap> archetype_map { component_archetype_mapping[component_id] };
+  if (archetype_map == nullptr) {
+    return;
+  }
   ArchetypeRecord a_record { (*archetype_map)[archetype->get_id()] };
   (*archetype)[a_record].insert(component, record->row);
 }

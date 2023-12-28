@@ -1,10 +1,9 @@
 #pragma once
 #include <exception>
+#include <map>
 #include <vector>
 #include <algorithm>
-#include <iostream>
 #include <cstring>
-#include <unordered_map>
 #include <memory>
 #include "Types.hpp"
 
@@ -63,10 +62,12 @@ class Column { // Equivalent to an ecs_type_t
     std::size_t insert(std::vector<uint8_t> *component, std::size_t index) {
       if ( count == max_amount )
         throw std::exception();
-      int i = 0;
-      for (uint8_t element: *component) {
-        elements.get()[(index) * element_size + i] = element;
-        ++i;
+      if (component == nullptr) {
+        throw std::exception();
+      }
+      for (int j = 0; j < element_size; ++j) {
+        uint8_t element = (*component)[j];
+        elements.get()[(index) * element_size + j] = element;
       }
       count++;
       return count - 1;
@@ -118,12 +119,12 @@ class Archetype {
     /*!
      * @brief Returns a reference to the edges of the archetype
      */
-    std::unordered_map<ComponentId, std::shared_ptr<ArchetypeEdge>> &get_edges();
+    std::map<ComponentId, std::shared_ptr<ArchetypeEdge>> &get_edges();
 
     /*!
      * @brief Returns the archetype signature
      */
-    ArchetypeSignature &get_type();
+    ArchetypeSignature get_type();
 
     /*!
      * @brief Overloads the indexing operator for getting the components
@@ -193,7 +194,7 @@ class Archetype {
     ArchetypeId id;
     ArchetypeSignature type;
     std::vector<Column> components;
-    std::unordered_map<ComponentId, std::shared_ptr<ArchetypeEdge>> edges;
+    std::map<ComponentId, std::shared_ptr<ArchetypeEdge>> edges;
 };
 
 /*!

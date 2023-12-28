@@ -256,3 +256,22 @@ TEST_CASE("Adding component to entity", "[add_component]") {
   REQUIRE(acceleration_result.x == 10);
   REQUIRE(acceleration_result.y == 40);
 }
+
+TEST_CASE("Removing component from entity" ,"[remove_component]") {
+  WorldRegistry registry {1};
+  ComponentId speed = registry.register_component<Speed>();
+  ComponentId velocity = registry.register_component<Velocity>();
+  ComponentId acceleration = registry.register_component<Acceleration>();
+  EntityId entity = registry.create_entity<Speed, Velocity>();
+  registry.attach_component(entity, (Speed){2, 3, 4});
+  registry.attach_component(entity, (Velocity){1, 5});
+  registry.remove_component<Velocity>(entity);
+
+  Speed speed_result = registry.get_component<Speed>(entity).value();
+  REQUIRE(speed_result.x == 2);
+  REQUIRE(speed_result.y == 3);
+  REQUIRE(speed_result.z == 4);
+  Velocity velocity_result = registry.get_component<Velocity>(entity).value_or((Velocity) {0, 0});
+  REQUIRE(velocity_result.x == 0);
+  REQUIRE(velocity_result.y == 0);
+}
