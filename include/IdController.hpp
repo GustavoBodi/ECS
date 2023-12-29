@@ -6,34 +6,22 @@
  */
 class IdController {
 public:
-  /*!
-   * @brief Default constructor
-   */
+  /*! @brief Default constructor */
   IdController() = default;
 
-  /*!
-   * @brief Default destructor
-   */
+  /*! @brief Default destructor */
   ~IdController() = default;
 
-  /*!
-   * @brief Returns a new component id
-   */
+  /*! @brief Returns a new component id */
   ComponentId gen_component_id() { component++; return component; }
 
-  /*!
-   * @brief Returns a new system id
-   */
+  /*! @brief Returns a new system id */
   SystemId gen_system_id() { component++; return component; }
 
-  /*!
-   * @brief Returns a new entity id
-   */
+  /*! @brief Returns a new entity id */
   EntityId gen_entity_id() { entity++; return entity; }
 
-  /*!
-   * @brief Returns a new archetype id
-   */
+  /*! @brief Returns a new archetype id */
   ArchetypeId gen_archetype_id() { archetype++; return archetype; }
 
 private:
