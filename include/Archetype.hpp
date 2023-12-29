@@ -17,7 +17,7 @@ struct ArchetypeEdge;
  * @brief Database Columns that represent components (vertically), the row is a representation
  * of an entity
  */
-class Column { // Equivalent to an ecs_type_t
+class Column {
   public:
     Column(std::size_t element_size, ComponentId type) : element_size{ element_size }, type{ type }
      {};

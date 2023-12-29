@@ -51,7 +51,7 @@ TEST_CASE("Entity Id", "[entity_id]") {
   for (int i = 0; i < 10; ++i) {
     list[i] = registry.create_entity<Velocity>();
   }
-  REQUIRE(registry.get_id() == 13);
+  REQUIRE(registry.get_id() == 11);
 }
 
 TEST_CASE("Register entity without archetype", "[archetypeless_registering]") {
@@ -61,7 +61,7 @@ TEST_CASE("Register entity without archetype", "[archetypeless_registering]") {
   for (int i = 0; i < 10; ++i) {
     list[i] = registry.create_entity<Velocity>();
   }
-  REQUIRE(registry.get_id() == 13);
+  REQUIRE(registry.get_id() == 11);
 }
 
 TEST_CASE("Id component retrieval from type", "[component_id_retrieval_from_type]") {

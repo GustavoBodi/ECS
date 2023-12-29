@@ -4,8 +4,7 @@
 #include <algorithm>
 
 WorldRegistry::WorldRegistry(uint64_t cycle_reset)
-    : entity_index(), component_index(), system_index(), archetype_index(),
-      next_id{0}, cycle_reset{cycle_reset}
+    : entity_index(), component_index(), system_index(), archetype_index(), cycle_reset{cycle_reset}
 {}
 
 void WorldRegistry::delete_entity(EntityId entity) {
@@ -44,10 +43,6 @@ std::size_t WorldRegistry::count_components() {
   return component_index.size();
 }
 
-uint64_t WorldRegistry::get_id() {
-  return next_id;
-}
-
 archetype_t WorldRegistry::add_node(archetype_t archetype) {
   return add_node(archetype->get_type());
 }
@@ -67,9 +62,8 @@ archetype_t WorldRegistry::add_node(std::vector<ComponentId> type) {
       std::tuple<ComponentId, std::size_t> component_depth = std::make_tuple(component, depth);
       std::tuple<archetype_t, std::size_t> indexed_tuple = depth_index[component_depth];
       if (std::get<archetype_t>(indexed_tuple) == nullptr) {
-        archetype_t new_arch (new Archetype(next_id, new_signature));
+        archetype_t new_arch (new Archetype(ids.gen_archetype_id(), new_signature));
         depth_index[component_depth] = std::make_tuple(new_arch, 1);
-        ++next_id;
         new_edge->add = std::make_tuple(new_arch, component);
       } else {
         auto new_arch = std::get<archetype_t>(indexed_tuple);
@@ -152,7 +146,7 @@ std::vector<uint8_t> *WorldRegistry::get_component(EntityId entity, ComponentId 
 }
 
 archetype_t WorldRegistry::register_archetype(std::vector<ComponentId> &components) {
-  ArchetypeId arch_id = ++next_id;
+  ArchetypeId arch_id = ids.gen_archetype_id();
   //archetype_ids.put<T...>(arch_id);
   archetype_t new_archetype { new Archetype(arch_id, components) };
   archetype_index[arch_id] = new_archetype;

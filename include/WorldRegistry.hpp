@@ -1,36 +1,26 @@
 #pragma once
 #include <optional>
 #include <unordered_map>
-#include "GraphController.hpp"
+#include "IdController.hpp"
 #include "Archetype.hpp"
 #include "Hasher.hpp"
 #include "System.hpp"
 #include "TypeMapper.hpp"
 #include "Types.hpp"
 
-/*!
- * @brief System id representation
- */
-using SystemId = uint64_t;
 
 /*!
  * @brief The registry for a world of entities, a program may have more than one
  */
 class WorldRegistry {
   public:
-    /*!
-     * @brief Contructor to the world registry, will create its own archetype graph
-     */
+    /*! @brief Contructor to the world registry, will create its own archetype graph */
     WorldRegistry(uint64_t cycle_reset);
     
-    /*!
-     * @brief Destructor for the WorldRegistry
-     */
+    /*! @brief Destructor for the WorldRegistry */
     ~WorldRegistry() = default;
 
-    /*!
-     * @brief Registers a new component in the registry
-     */
+    /*! @brief Registers a new component in the registry */
     template <typename Component>
     ComponentId register_component();
     
@@ -48,13 +38,6 @@ class WorldRegistry {
      * @param system The id of the system to be disabled
      */
     void disable_system(const SystemId system);
-
-    /*!
-     * @brief Creates an archetype signature from template parameters
-     * @tparam Components The components that represent the archetype
-     */
-    template <typename ...Components>
-    std::vector<ComponentId> make_archetype_signature();
 
     /*!
      * @brief Return the component from the Registry
@@ -112,9 +95,7 @@ class WorldRegistry {
     template <typename T>
     void attach_component(EntityId entity, T component);
 
-    /*!
-     * @brief Attaches a component to an entity with a void pointer
-     */
+    /*! @brief Attaches a component to an entity with a void pointer */
     void attach_component(EntityId entity, ComponentId component_id , std::vector<uint8_t> *component);
 
     /*!
@@ -133,76 +114,60 @@ class WorldRegistry {
     template<typename T>
     archetype_t remove_component(EntityId entity);
 
-    /*!
-     * @brief Get archetype dependency graph
-     */
+    /*! @brief Get archetype dependency graph */
     void get_dependency_graph(std::vector<ComponentId> &input) {
       std::vector<Archetype*> visited;
       list_each(root, input, visited);
     }
 
-    /*!
-     * @brief Recursive function for showing each of the graph dependencies
-     */
+    /*! @brief Recursive function for showing each of the graph dependencies */
     void list_each(archetype_t archetype, std::vector<ComponentId> &input, std::vector<Archetype*> &visited);
 
-    /*!
-     * @brief Ticks the entire registry
-     */
+    /*! @brief Ticks the entire registry */
     void tick();
 
-    /*l!
-     * @brief Returns the amount of registered components
-     */
+    /*! @brief Returns the amount of registered components */
     std::size_t count_components();
 
-    /*!
-     * @brief Returns the next id for a new entity
-     */
-    uint64_t get_id();
+    /*! @brief Returns the next id for a new entity */
+    uint64_t get_id() { return ids.gen_entity_id(); }
 
-    /*!
-     * @brief Returns the id associated with the component type
-     */
+    /*! @brief Return the id associated with the achetype type */
+    template <typename ...T>
+    ArchetypeId get_archetype_id();
+
+    /*! @brief Returns the id associated with the component type */
     template <typename Component>
     ComponentId get_component_id();
 
-    /*!
-     * @brief Return the id associated with the achetype type
-     */
-    template <typename ...T>
-    ArchetypeId get_archetype_id();
-  
-    /*!
-     * @brief Creates a new mapping from the component to the archetypes
-     */
+  private:
+    /*! @brief Creates a new mapping from the component to the archetypes */
     void create_component_archetype_mapping(archetype_t archetype);
 
-    /*!
-     * @brief Creates the columns for all the components of the archetype
-     */
+    /*! @brief Creates the columns for all the components of the archetype */
     void create_archetype_columns(archetype_t archetype);
 
     /*!
-     * @brief Adds a node to the graph
+     * @brief Creates an archetype signature from template parameters
+     * @tparam Components The components that represent the archetype
      */
-    archetype_t add_node(std::vector<ComponentId> type);
+    template <typename ...Components>
+    std::vector<ComponentId> make_archetype_signature();
 
-    /*!
-     * @brief Adds a node to the graph
-     */
+    /*! @brief Adds a node to the graph */
     archetype_t add_node(archetype_t archetype);
 
-    /*!
-     * @brief Removes node from the graph
-     */
+    /*! @brief Removes node from the graph */
     void remove_node(archetype_t archetype);
 
-  private:
-    /*!
-     * @brief Relation between and entity id with an archetype and a line
-     */
+    /*! @brief Adds a node to the graph */
+    archetype_t add_node(std::vector<ComponentId> type);
+
+    /*! @brief Relation between and entity id with an archetype and a line */
     std::unordered_map<EntityId, std::shared_ptr<Record>> entity_index;
+
+    /*! @brief The class that generates the new ids, exists for composition purposes */
+    IdController ids {};
 
     /*!
      * @brief Relation of a component Id with a relation of an archetype for the column
@@ -210,73 +175,40 @@ class WorldRegistry {
      */
     std::unordered_map<ComponentId, std::shared_ptr<ArchetypeMap>> component_archetype_mapping;
 
-    /*!
-     * @brief Maps a component type with its id
-     */
+    /*! @brief Maps a component type with its id */
     TypeMapper<ComponentId> component_index;
 
-    /*!
-     * @brief Maps a component id with its size
-     */
+    /*! @brief Maps a component id with its size */
     std::unordered_map<ComponentId, std::size_t> component_size_index;
 
-    /*!
-     * @brief Relation between a system id and a system
-     */
+    /*! @brief Relation between a system id and a system */
     std::unordered_map<SystemId, std::unique_ptr<System>> system_index;
 
-    /*!
-     * @brief List of disabled systems
-     */
+    /*! @brief List of disabled systems */
     std::unordered_set<SystemId> disabled_systems_index;
 
-    /*!
-     * @brief Relationship between a list of components and the archetypes
-     */
+    /*! @brief Relationship between a list of components and the archetypes */
     std::unordered_map<ArchetypeId, archetype_t> archetype_index;
 
-    /*!
-     * @brief An archetype id list
-     */
+    /*! @brief An archetype id list */
     TypeMapper<ArchetypeId> archetype_ids;
 
-    /*!
-     * @brief Root archetype of the graph
-     */
-
+    /*! @brief Root archetype of the graph */
     archetype_t root { new Archetype {0, std::vector<ComponentId>()} };
 
-    using dependencies_t = std::size_t;
-    using depth = std::size_t;
-    /*!
-     * @brief Representation of a component depth in the graph
-     * ComponentId, depth, dependencies
-     */
-    using depth_t = std::tuple<ComponentId, depth>;
-
-    /*!
-     * @brief All the registered components and their depth in the graph
-     */
+    /*! @brief All the registered components and their depth in the graph */
     std::unordered_map<depth_t, std::tuple<archetype_t, dependencies_t>> depth_index;
 
-    /*!
-     * @brief The controller for the graph operations
-     */
-    GraphController graph {root};
+    /*! @brief The controller for the graph operations */
+    //GraphController graph {root};
 
     /*!
-     * @brief Next entity id
-     */
-    uint64_t next_id;
-
-    /*!
-     * @brief Represents the internal abstractions of cycles (relates mainly to the systems that should run each tick)
+     * @brief Represents the internal abstractions of cycles
+     * (relates mainly to the systems that should run each tick)
      */
     uint64_t cycle_reset;
 
-    /*!
-     * @brief The cycle the world is currently in
-     */
+    /*! @brief The cycle the world is currently in */
     uint64_t cycle;
 };
 
@@ -288,14 +220,14 @@ ComponentId WorldRegistry::get_component_id() {
 
 template <typename Component>
 ComponentId WorldRegistry::register_component() {
-  component_index.put<Component>(++next_id);
+  component_index.put<Component>(ids.gen_component_id());
   component_size_index[get_component_id<Component>()] = sizeof(Component);
   return get_component_id<Component>();
 }
 
 template <typename ...Components>
 EntityId WorldRegistry::create_entity() {
-  EntityId new_entity = ++next_id;
+  EntityId new_entity = ids.gen_entity_id();
   if (!archetype_ids.contains<Components...>()) {
     register_archetype<Components...>();
   }
@@ -310,7 +242,7 @@ EntityId WorldRegistry::create_entity() {
 
 template <typename ...T>
 std::optional<ArchetypeId> WorldRegistry::register_archetype() {
-  ArchetypeId arch_id = ++next_id;
+  ArchetypeId arch_id = ids.gen_archetype_id();
   archetype_ids.put<T...>(arch_id);
   archetype_t new_archetype { new Archetype(arch_id, make_archetype_signature<T...>()) };
   archetype_index[arch_id] = new_archetype;
@@ -322,7 +254,7 @@ std::optional<ArchetypeId> WorldRegistry::register_archetype() {
 
 template <typename Func, std::enable_if_t<std::is_function_v<Func>>, typename ...T>
 const SystemId WorldRegistry::register_system(Func system) {
-  SystemId id { next_id++ };
+  SystemId id { ids.gen_system_id() };
   return id;
 }
 
@@ -440,3 +372,4 @@ archetype_t WorldRegistry::remove_component(EntityId entity) {
   }
   return new_archetype;
 }
+
