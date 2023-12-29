@@ -4,17 +4,12 @@
 #include <vector>
 #include <boost/functional/hash.hpp>
 #include <tuple>
-#include <cstdint>
 
-/*!
- * @brief Template class for hashing vectors of some kind of id
- */
+/*! @brief Template class for hashing vectors of some kind of id */
 template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
 class VectorHasher {
   public:
-    /*!
-     * @brief Overloaded function call for satisfying std::hash
-     */
+    /*! @brief Overloaded function call for satisfying std::hash */
     std::size_t operator()(std::vector<T> const& vec) const {
       std::size_t seed = vec.size();
       for(auto x : vec) {
@@ -27,10 +22,9 @@ class VectorHasher {
     }
 };
 
-
 namespace std
 {
-
+/*! @brief Boost implementation of hashing for tuples */
 template<typename... T>
 struct hash<tuple<T...>>
 {
@@ -39,5 +33,4 @@ struct hash<tuple<T...>>
         return boost::hash_value(arg);
     }
 };
-
 }

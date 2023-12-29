@@ -117,7 +117,7 @@ void WorldRegistry::create_component_archetype_mapping(archetype_t archetype) {
   }
 }
 
-void WorldRegistry::attach_component(EntityId entity, ComponentId component_id, std::vector<uint8_t> *component) {
+void WorldRegistry::attach_component(EntityId entity, ComponentId component_id, void *component) {
   std::shared_ptr<Record> record { entity_index[entity] };
   if (record == nullptr) {
     return;
@@ -131,7 +131,7 @@ void WorldRegistry::attach_component(EntityId entity, ComponentId component_id, 
   (*archetype)[a_record].insert(component, record->row);
 }
 
-std::vector<uint8_t> *WorldRegistry::get_component(EntityId entity, ComponentId component_id) {
+void *WorldRegistry::get_component(EntityId entity, ComponentId component_id) {
   if (entity_index[entity] == nullptr) {
     return nullptr;
   }

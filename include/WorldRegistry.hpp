@@ -9,9 +9,7 @@
 #include "Types.hpp"
 
 
-/*!
- * @brief The registry for a world of entities, a program may have more than one
- */
+/*! @brief The registry for a world of entities, a program may have more than one */
 class WorldRegistry {
   public:
     /*! @brief Contructor to the world registry, will create its own archetype graph */
@@ -52,7 +50,7 @@ class WorldRegistry {
      * @param entity The of the entity to be searched
      * @param component The id of the component to be searched
      */
-    std::vector<uint8_t> *get_component(EntityId entity, ComponentId component);
+    void *get_component(EntityId entity, ComponentId component);
 
     /*!
      * @brief Creates a new entity
@@ -96,7 +94,7 @@ class WorldRegistry {
     void attach_component(EntityId entity, T component);
 
     /*! @brief Attaches a component to an entity with a void pointer */
-    void attach_component(EntityId entity, ComponentId component_id , std::vector<uint8_t> *component);
+    void attach_component(EntityId entity, ComponentId component_id , void *component);
 
     /*!
      * @brief Adds a certain component to an entity
@@ -319,7 +317,7 @@ archetype_t WorldRegistry::add_component(EntityId entity) {
   } else {
     new_archetype = std::get<archetype_t>(indexed_archetype->add);
   }
-  std::vector<std::vector<uint8_t>*> components;
+  std::vector<void*> components;
   for (ComponentId component: old_signature) {
     components.push_back(get_component(entity, component));
   }
@@ -331,9 +329,6 @@ archetype_t WorldRegistry::add_component(EntityId entity) {
   for (ComponentId component: old_signature) {
     attach_component(entity, component, components[i]);
     ++i;
-  }
-  for (auto component: components) {
-    delete component;
   }
   return new_archetype;
 }
@@ -354,7 +349,7 @@ archetype_t WorldRegistry::remove_component(EntityId entity) {
   } else {
     new_archetype = std::get<archetype_t>(indexed_archetype->remove);
   }
-  std::vector<std::vector<uint8_t>*> components;
+  std::vector<void*> components;
   for (ComponentId component: new_signature) {
     components.push_back(get_component(entity, component));
   }
@@ -366,9 +361,6 @@ archetype_t WorldRegistry::remove_component(EntityId entity) {
   for (ComponentId component: new_signature) {
     attach_component(entity, component, components[i]);
     ++i;
-  }
-  for (auto component: components) {
-    delete component;
   }
   return new_archetype;
 }

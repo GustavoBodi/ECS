@@ -6,98 +6,10 @@
 #include <cstring>
 #include <memory>
 #include "Types.hpp"
+#include "Column.hpp"
 
-
-/*!
- * @brief Forward declaration of the archetypes graph
- */
+/*! @brief Forward declaration of the archetypes graph */
 struct ArchetypeEdge;
-
-/*!
- * @brief Database Columns that represent components (vertically), the row is a representation
- * of an entity
- */
-class Column {
-  public:
-    Column(std::size_t element_size, ComponentId type) : element_size{ element_size }, type{ type }
-     {};
-
-    /*!
-     * @brief Overload of the indexing operator for selecting a line (Archetype)
-     * @param index Return the value from the buffer of components
-     */
-    template <typename T>
-    T get(std::size_t index) {
-      T (*array)[max_amount] = (T(*)[max_amount]) elements.get();
-      return (*array)[index];
-    }
-
-    /*!
-     * @brief Overload of the indexing operator for selecting a line (Archetype)
-     * @param index Return the value from the buffer of components
-     */
-    std::vector<uint8_t> *get(std::size_t index) {
-      std::vector<uint8_t> *copy = new std::vector<uint8_t>();
-      for (int i = 0; i < element_size; ++i) {
-        copy->push_back(elements.get()[(index) * element_size + i]);
-      }
-      return copy;
-    }
-
-    /*!
-     * @brief Inserts value in the column
-     * @param component The component to be inserted
-     * @tparam Component The component type
-     */
-    template <typename Component>
-    std::size_t insert(Component component, std::size_t index) {
-      if ( count == max_amount )
-        throw std::exception();
-      Component (*array)[max_amount] = (Component(*)[max_amount]) (elements.get());
-      (*array)[index] = component;
-      count++;
-      return count - 1;
-    }
-
-    std::size_t insert(std::vector<uint8_t> *component, std::size_t index) {
-      if ( count == max_amount )
-        throw std::exception();
-      if (component == nullptr) {
-        throw std::exception();
-      }
-      for (int j = 0; j < element_size; ++j) {
-        uint8_t element = (*component)[j];
-        elements.get()[(index) * element_size + j] = element;
-      }
-      count++;
-      return count - 1;
-    }
-
-    /*!
-     * @brief Removes value from the column
-     * @param index The index of the component to be deleted
-     */
-    void delete_component(std::size_t index) {
-      if (index == count + 1)
-        count --;
-    }
-
-  private:
-    /*! @brief Size of an element */
-    std::size_t element_size;
-
-    /*! @brief Number of elements */
-    std::size_t count { 0 };
-
-    /*! @brief Max amount of elements in the array */
-    std::size_t max_amount { 1000 };
-
-    /*! @brief Buffer with the components */
-    std::shared_ptr<uint8_t[]> elements {new uint8_t [max_amount * element_size]};
-
-    /*! @brief the type of component in the column */
-    ComponentId type;
-};
 
 /*!
  * @brief Structure of an Archetype in a line of the database
@@ -111,63 +23,43 @@ class Archetype {
      */
     Archetype(ArchetypeId id, std::vector<ComponentId> ids): id{id}, type{ids} {};
 
-    /*!
-     * @brief Returns the id from the archetype
-     */
+    /*! @brief Returns the id from the archetype */
     ArchetypeId get_id();
 
-    /*!
-     * @brief Returns a reference to the edges of the archetype
-     */
+    /*! @brief Returns a reference to the edges of the archetype */
     std::map<ComponentId, std::shared_ptr<ArchetypeEdge>> &get_edges();
 
-    /*!
-     * @brief Returns the archetype signature
-     */
+    /*! @brief Returns the archetype signature */
     ArchetypeSignature get_type();
 
-    /*!
-     * @brief Overloads the indexing operator for getting the components
-     */
+    /*! @brief Overloads the indexing operator for getting the components */
     Column &operator[] (std::size_t index);
 
-    /*!
-     * @brief Returns the current amount of registered items
-     */
+    /*! @brief Returns the current amount of registered items */
     std::size_t size() { return _size; }
 
-    /*!
-     * @brief Returns true if there is not dependent type left
-     */
+    /*! @brief Returns true if there is not dependent type left */
     bool is_empty() {
       return dependent_type == 0;
     }
 
-    /*!
-     * @brief Removes a dependent entity
-     */
+    /*! @brief Removes a dependent entity */
     void remove_dependent_type() {
       --dependent_type;
     }
 
-    /*!
-     * @brief Inserts a new dependent type
-     */
+    /*! @brief Inserts a new dependent type */
     void insert_dependent_type() {
       ++dependent_type;
     }
 
-    /*!
-     * @brief Returns the row for a new entity
-     */
+    /*! @brief Returns the row for a new entity */
     std::size_t assign_row() { 
       _size++;
       return _size; 
     };
 
-    /*!
-     * @brief Returns the index of the Component in signature
-     */
+    /*! @brief Returns the index of the Component in signature */
     const std::size_t column_value(ComponentId component) const {
       auto result = std::find(type.begin(), type.end(), component);
       if (result == type.end()) {
@@ -177,43 +69,39 @@ class Archetype {
       return index;
     }
 
-    /*!
-     * @brief Creates a new Column with a certain type
-     */
+    /*! @brief Creates a new Column with a certain type */
     void create_column(std::size_t element_size, ComponentId type) {
       components.push_back(Column(element_size, type));
     }
 
-    /*!
-     * @brief Archetype Destructor
-     */
+    /*! @brief Archetype Destructor */
     ~Archetype();
   private:
+    /*! @brief Current assigned row */
     std::size_t _size { 0 };
+    /*! @brief Archetypes that depend on this archetype */
     std::size_t dependent_type { 0 };
+    /*! @brief Id representation */
     ArchetypeId id;
+    /*! @brief Component archetype representation */
     ArchetypeSignature type;
+    /*! @brief Vector that stores the columns that represent the array of components */
     std::vector<Column> components;
+    /*! @brief Graph edges for other archetypes */
     std::map<ComponentId, std::shared_ptr<ArchetypeEdge>> edges;
 };
 
-/*!
- * @brief Connections to other Archetypes
- */
+/*! @brief Connections to other Archetypes */
 struct ArchetypeEdge {
   std::tuple<std::shared_ptr<Archetype>, ComponentId> add;
   std::tuple<std::shared_ptr<Archetype>, ComponentId> remove;
 };
 
-/*!
- * @brief The Record is an archetype relation with its row on the database
- */
+/*! @brief The Record is an archetype relation with its row on the database */
 struct Record {
   std::shared_ptr<Archetype> archetype;
   std::size_t row;
 };
 
-/*
- * @brief Alias for Archetype pointer
- */
+/* @brief Alias for Archetype pointer */
 using archetype_t = std::shared_ptr<Archetype>;
