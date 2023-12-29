@@ -23,4 +23,3 @@ Column& Archetype::operator[](std::size_t index)
   return components[index];
 }
 
-Archetype::~Archetype() {}

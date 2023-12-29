@@ -13,7 +13,7 @@
 class WorldRegistry {
   public:
     /*! @brief Contructor to the world registry, will create its own archetype graph */
-    WorldRegistry(uint64_t cycle_reset);
+    WorldRegistry(uint64_t cycle_reset = 10);
     
     /*! @brief Destructor for the WorldRegistry */
     ~WorldRegistry() = default;

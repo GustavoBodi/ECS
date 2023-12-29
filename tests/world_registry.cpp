@@ -23,7 +23,7 @@ struct Gravity {
 };
 
 TEST_CASE("Component count", "[component_count]") {
-  WorldRegistry registry {10};
+  WorldRegistry registry {};
   REQUIRE(registry.count_components() == 0);
   ComponentId id_vel = registry.register_component<Velocity>();
   REQUIRE(registry.count_components() == 1);
@@ -34,7 +34,7 @@ TEST_CASE("Component count", "[component_count]") {
 }
 
 TEST_CASE("Component id", "[component_id]") {
-  WorldRegistry registry {10};
+  WorldRegistry registry {};
   ComponentId id_vel = registry.register_component<Velocity>();
   ComponentId id_speed = registry.register_component<Speed>();
   ComponentId id_acceleration = registry.register_component<Acceleration>();
@@ -44,7 +44,7 @@ TEST_CASE("Component id", "[component_id]") {
 }
 
 TEST_CASE("Entity Id", "[entity_id]") {
-  WorldRegistry registry {10};
+  WorldRegistry registry {};
   registry.register_component<Velocity>();
   registry.register_archetype<Velocity>();
   EntityId list [10];
@@ -55,7 +55,7 @@ TEST_CASE("Entity Id", "[entity_id]") {
 }
 
 TEST_CASE("Register entity without archetype", "[archetypeless_registering]") {
-  WorldRegistry registry {10};
+  WorldRegistry registry {};
   registry.register_component<Velocity>();
   EntityId list [10];
   for (int i = 0; i < 10; ++i) {
@@ -75,7 +75,7 @@ TEST_CASE("Id component retrieval from type", "[component_id_retrieval_from_type
 }
 
 TEST_CASE("Archetype Id", "[archetype_id]") {
-  WorldRegistry registry {10};
+  WorldRegistry registry {};
   ComponentId id_vel = registry.register_component<Velocity>();
   ComponentId id_speed = registry.register_component<Speed>();
   ComponentId id_acceleration = registry.register_component<Acceleration>();
@@ -91,7 +91,7 @@ TEST_CASE("Archetype Id", "[archetype_id]") {
 }
 
 TEST_CASE("Find Component (Single Component archetype)", "[single_component_retrieval]") {
-  WorldRegistry registry { 10 };
+  WorldRegistry registry {};
 
   ComponentId id_vel = registry.register_component<Velocity>();
   ComponentId id_acc = registry.register_component<Acceleration>();
@@ -122,7 +122,7 @@ TEST_CASE("Find Component (Single Component archetype)", "[single_component_retr
 }
 
 TEST_CASE("Find component (Multiple component archetype)", "[multiple_component_retrieval]") {
-  WorldRegistry registry { 10 };
+  WorldRegistry registry {};
   ComponentId id_vel = registry.register_component<Velocity>();
   ComponentId id_acc = registry.register_component<Acceleration>();
 
@@ -149,7 +149,7 @@ TEST_CASE("Find component (Multiple component archetype)", "[multiple_component_
 }
 
 TEST_CASE("Find component with multiple registered archetypes", "[heterogeneous_archetype_retrieval]") {
-  WorldRegistry registry { 10 };
+  WorldRegistry registry {};
   ComponentId id_vel = registry.register_component<Velocity>();
   ComponentId id_acc = registry.register_component<Acceleration>();
   ComponentId id_speed = registry.register_component<Speed>();
@@ -193,7 +193,7 @@ TEST_CASE("Find component with multiple registered archetypes", "[heterogeneous_
 }
 
 TEST_CASE("Entity deletion", "[entity_delete]") {
-  WorldRegistry registry {1};
+  WorldRegistry registry {};
   registry.register_component<Speed>();
   EntityId entity = registry.create_entity<Speed>();
   registry.attach_component(entity, (Speed){2, 3, 4});
@@ -207,7 +207,7 @@ TEST_CASE("Entity deletion", "[entity_delete]") {
 }
 
 TEST_CASE("Insertion on graph", "[graph_insertion]") {
-  WorldRegistry registry {1};
+  WorldRegistry registry {};
   ComponentId speed = registry.register_component<Speed>();
   ComponentId velocity = registry.register_component<Velocity>();
   ComponentId acceleration = registry.register_component<Acceleration>();
@@ -235,7 +235,7 @@ TEST_CASE("Insertion on graph", "[graph_insertion]") {
 }
 
 TEST_CASE("Adding component to entity", "[add_component]") {
-  WorldRegistry registry {1};
+  WorldRegistry registry {};
   ComponentId speed = registry.register_component<Speed>();
   ComponentId velocity = registry.register_component<Velocity>();
   ComponentId acceleration = registry.register_component<Acceleration>();
@@ -258,7 +258,7 @@ TEST_CASE("Adding component to entity", "[add_component]") {
 }
 
 TEST_CASE("Removing component from entity" ,"[remove_component]") {
-  WorldRegistry registry {1};
+  WorldRegistry registry {};
   ComponentId speed = registry.register_component<Speed>();
   ComponentId velocity = registry.register_component<Velocity>();
   ComponentId acceleration = registry.register_component<Acceleration>();
