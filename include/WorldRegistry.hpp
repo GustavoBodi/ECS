@@ -5,6 +5,7 @@
 #include "Archetype.hpp"
 #include "Hasher.hpp"
 #include "System.hpp"
+#include "SystemCreator.hpp"
 #include "TypeMapper.hpp"
 #include "Types.hpp"
 
@@ -28,7 +29,7 @@ class WorldRegistry {
      * @param tick_rate Every something ticks a system will run
      * when the registry itself ticks
      */
-    template <typename Func, std::enable_if_t<std::is_function_v<Func>>, typename ...T>
+    template <typename ...T, typename Func>
     const SystemId register_system(Func system);
 
     /*!
@@ -163,49 +164,38 @@ class WorldRegistry {
 
     /*! @brief Relation between and entity id with an archetype and a line */
     std::unordered_map<EntityId, std::shared_ptr<Record>> entity_index;
-
+    /* @brief Auxiliary class for system creation */
+    SystemCreator sys {};
     /*! @brief The class that generates the new ids, exists for composition purposes */
     IdController ids {};
-
     /*!
      * @brief Relation of a component Id with a relation of an archetype for the column
      * in the database
      */
     std::unordered_map<ComponentId, std::shared_ptr<ArchetypeMap>> component_archetype_mapping;
-
     /*! @brief Maps a component type with its id */
     TypeMapper<ComponentId> component_index;
-
     /*! @brief Maps a component id with its size */
     std::unordered_map<ComponentId, std::size_t> component_size_index;
-
     /*! @brief Relation between a system id and a system */
-    std::unordered_map<SystemId, std::unique_ptr<System>> system_index;
-
+    std::unordered_map<SystemId, std::unique_ptr<SystemBase>> system_index;
     /*! @brief List of disabled systems */
     std::unordered_set<SystemId> disabled_systems_index;
-
     /*! @brief Relationship between a list of components and the archetypes */
     std::unordered_map<ArchetypeId, archetype_t> archetype_index;
-
     /*! @brief An archetype id list */
     TypeMapper<ArchetypeId> archetype_ids;
-
     /*! @brief Root archetype of the graph */
     archetype_t root { new Archetype {0, std::vector<ComponentId>()} };
-
     /*! @brief All the registered components and their depth in the graph */
     std::unordered_map<depth_t, std::tuple<archetype_t, dependencies_t>> depth_index;
-
     /*! @brief The controller for the graph operations */
     //GraphController graph {root};
-
     /*!
      * @brief Represents the internal abstractions of cycles
      * (relates mainly to the systems that should run each tick)
      */
     uint64_t cycle_reset;
-
     /*! @brief The cycle the world is currently in */
     uint64_t cycle;
 };
@@ -250,10 +240,10 @@ std::optional<ArchetypeId> WorldRegistry::register_archetype() {
   return std::make_optional(arch_id);
 }
 
-template <typename Func, std::enable_if_t<std::is_function_v<Func>>, typename ...T>
+template <typename ...T, typename Func>
 const SystemId WorldRegistry::register_system(Func system) {
-  SystemId id { ids.gen_system_id() };
-  return id;
+  auto sys_class = sys.create_system<T...>(ids.gen_system_id(), system);
+  return sys_class->get_id();
 }
 
 template <typename ...T>

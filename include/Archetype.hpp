@@ -76,6 +76,7 @@ class Archetype {
 
     /*! @brief Archetype Destructor */
     ~Archetype() = default;
+
   private:
     /*! @brief Current assigned row */
     std::size_t _size { 0 };

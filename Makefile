@@ -4,7 +4,7 @@ all:
 	mkdir -p build/ && \
 	cd build && \
 	cmake ../ && \
-	make && \
+	make -j12 && \
 	./project
 
 setup_docs:
@@ -14,13 +14,13 @@ setup_docs:
 
 run:
 	cd build && \
-	make && \
+	make -j12 && \
 	./project
 
 test:
 	cd build && \
 	cmake ../ && \
-	make && \
+	make -j12 && \
 	./tests-main
 
 docs:

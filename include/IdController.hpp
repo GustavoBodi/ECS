@@ -27,13 +27,10 @@ public:
 private:
   /*! @brief The current entity id in the controller */
   EntityId entity { 0 };
-
   /*! @brief The current component id in the controller */
   ComponentId component { 0 };
-
   /*! @brief The current system id in the controller */
   SystemId system { 0 };
-
   /*! @brief The current archetype id in the controller */
   ArchetypeId archetype { 0 };
 };

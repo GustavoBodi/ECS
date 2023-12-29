@@ -64,16 +64,12 @@ class Column {
   private:
     /*! @brief Size of an element */
     std::size_t element_size;
-
     /*! @brief Number of elements */
     std::size_t count { 0 };
-
     /*! @brief Max amount of elements in the array */
     std::size_t max_amount { 100000 };
-
     /*! @brief Buffer with the components */
     std::shared_ptr<uint8_t[]> elements {new uint8_t [max_amount * element_size]};
-
     /*! @brief the type of component in the column */
     ComponentId type;
 };
