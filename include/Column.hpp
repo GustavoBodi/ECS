@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <memory>
 #include <cstring>
+#include <span>
 #include "Types.hpp"
 
 /*!
@@ -24,9 +25,10 @@ class Column {
     }
 
     template <typename T>
-    T *get_vector() {
+    std::tuple<std::span<T>, std::size_t> get_vector() {
       T (*array)[max_amount] = (T(*)[max_amount]) elements.get();
-      return *array;
+      std::span managed_list (*array, count);
+      return std::make_tuple(managed_list, count);
     }
 
     std::size_t size() {

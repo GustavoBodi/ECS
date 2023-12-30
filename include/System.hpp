@@ -81,14 +81,17 @@ public:
   /*! @brief Runs an instance of system */
   void run() {
     for (archetype_t archetype: archetype_list) {
-      std::tuple<std::vector<Components>*...> dependency_list;
+      std::tuple<std::tuple<std::span<Components>, std::size_t>...> dependency_list;
       ([&] {
-              //auto components = std::get<std::vector<Components>>(dependency_list);
               std::shared_ptr<ArchetypeMap> archetype_map { component_archetype_mapping[ids.get_component_id<Components>()] };
               ArchetypeRecord a_record { (*archetype_map)[archetype->get_id()] };
-              //components = (*archetype)[a_record].get_vector<Components>();
+              std::get<std::tuple<std::span<Components>, std::size_t>>(dependency_list) = (*archetype)[a_record].get_vector<Components>();
            } (), ...);
-      //std::apply(system_fn, );
+      std::size_t iter = std::get<std::size_t>(std::get<0>(dependency_list));
+      for (int i = 0; i < iter; ++i) {
+        std::tuple<Components...> result = std::make_tuple(std::get<std::span<Components>>(std::get<std::tuple<std::span<Components>, std::size_t>>(dependency_list))[i]...);
+        std::apply(system_fn, result);
+      }
     }
   }
 

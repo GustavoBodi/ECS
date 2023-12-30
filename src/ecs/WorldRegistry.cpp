@@ -28,11 +28,12 @@ void WorldRegistry::disable_system(const SystemId system) {
 }
 
 void WorldRegistry::tick() {
-  for (auto &system: system_index) {
+  for (auto system: system_index) {
     bool is_disabled = disabled_systems_index.count(system.first) != 0;
     bool should_run = system.second->get_tick() % cycle == 0;
-    if (!is_disabled && should_run)
+    if (!is_disabled && should_run) {
         system.second->run();
+    }
     if (cycle == cycle_reset)
       cycle = 0;
     ++cycle;

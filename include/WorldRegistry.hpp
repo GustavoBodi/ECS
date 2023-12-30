@@ -228,6 +228,7 @@ std::optional<ArchetypeId> WorldRegistry::register_archetype() {
 template <typename ...T, typename Func>
 const SystemId WorldRegistry::register_system(Func system) {
   auto sys_class = sys.create_system<T...>(ids.gen_system_id(), system);
+  system_index[sys_class->get_id()] = sys_class;
   return sys_class->get_id();
 }
 
