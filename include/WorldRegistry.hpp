@@ -158,18 +158,19 @@ private:
   /*! @brief Relation between and entity id with an archetype and a line */
   std::unordered_map<EntityId, std::shared_ptr<Record>> entity_index;
   /* @brief Auxiliary class for system creation */
-  SystemCreator sys { component_archetype_mapping, ids };
+  SystemCreator sys { component_archetype_mapping, ids, archetype_index };
   /*! @brief The class that generates the new ids, exists for composition purposes */
   IdController ids { };
   /*!
    * @brief Relation of a component Id with a relation of an archetype for the column
    * in the database
    */
+  /*! @brief Mapping from each components and its associated archetypes */
   std::unordered_map<ComponentId, std::shared_ptr<ArchetypeMap>> component_archetype_mapping;
   /*! @brief Maps a component id with its size */
   std::unordered_map<ComponentId, std::size_t> component_size_index;
   /*! @brief Relation between a system id and a system */
-  std::unordered_map<SystemId, SystemBase*> system_index;
+  std::map<SystemId, SystemBase*> system_index;
   /*! @brief List of disabled systems */
   std::unordered_set<SystemId> disabled_systems_index;
   /*! @brief Relationship between a list of components and the archetypes */
@@ -227,7 +228,10 @@ std::optional<ArchetypeId> WorldRegistry::register_archetype() {
 
 template <typename ...T, typename Func>
 const SystemId WorldRegistry::register_system(Func system) {
-  auto sys_class = sys.create_system<T...>(ids.gen_system_id(), system);
+  std::function<void(T*...)> wrapped_function { system };
+  SystemBase *sys_class = sys.create_system<T...>(ids.gen_system_id(), wrapped_function);
+  if (sys_class == nullptr)
+    throw std::exception();
   system_index[sys_class->get_id()] = sys_class;
   return sys_class->get_id();
 }

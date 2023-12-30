@@ -56,7 +56,7 @@ public:
   /*! @brief Returns the row for a new entity */
   std::size_t assign_row() { 
     _size++;
-    return _size; 
+    return _size - 1; 
   };
 
   /*! @brief Returns the index of the Component in signature */

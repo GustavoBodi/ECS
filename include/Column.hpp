@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <memory>
 #include <cstring>
+#include <iostream>
 #include <span>
 #include "Types.hpp"
 
@@ -26,10 +27,9 @@ public:
 
   /*! @brief Return the span of the current occupied column */
   template <typename T>
-  std::tuple<std::span<T>, std::size_t> get_vector() {
-    T (*array)[max_amount] = (T(*)[max_amount]) elements.get();
-    std::span managed_list (*array, count);
-    return std::make_tuple(managed_list, count);
+  std::pair<void*, std::size_t> get_vector() {
+    void* array = &elements.get()[0];
+    return std::make_pair(array, count);
   }
 
   /*! @brief Return the current size of the column */

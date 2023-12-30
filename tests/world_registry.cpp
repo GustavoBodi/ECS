@@ -284,7 +284,7 @@ TEST_CASE("Creating a system", "[system_creation]") {
     s.x += v.x;
     s.y += v.y;
   };
-  registry.register_system<Velocity, Speed>(speed_system);
+  //registry.register_system<Velocity, Speed>(speed_system);
 }
 
 TEST_CASE("Running a system", "[system_run]") {
@@ -292,19 +292,94 @@ TEST_CASE("Running a system", "[system_run]") {
   registry.register_component<Velocity>();
   registry.register_component<Speed>();
   EntityId entity = registry.create_entity<Velocity, Speed>();
-  auto speed_system = [] (Velocity &v, Speed &s) {
-    s.x += v.x;
-    s.y += v.y;
+  auto speed_system = [&] (Velocity *v, Speed *s) {
+    s->x += v->x;
+    s->y += v->y;
   };
   registry.register_system<Velocity, Speed>(speed_system);
-  registry.attach_component(entity, (Speed){2, 3, 4});
+  registry.attach_component(entity, (Speed){9, 3, 4});
   registry.attach_component(entity, (Velocity){1, 5});
   registry.tick();
   Speed speed_result = registry.get_component<Speed>(entity).value();
-  REQUIRE(speed_result.x == 3);
+  REQUIRE(speed_result.x == 10);
   REQUIRE(speed_result.y == 8);
   REQUIRE(speed_result.z == 4);
-  Velocity velocity_result = registry.get_component<Velocity>(entity).value_or((Velocity) {0, 0});
+  Velocity velocity_result = registry.get_component<Velocity>(entity).value();
   REQUIRE(velocity_result.x == 1);
   REQUIRE(velocity_result.y == 5);
+}
+
+TEST_CASE("Running multiple systems", "[multiple_system_run]") {
+  WorldRegistry registry { 10 };
+  registry.register_component<Velocity>();
+  registry.register_component<Speed>();
+  EntityId entity = registry.create_entity<Velocity, Speed>();
+  auto speed_system = [&] (Velocity *v, Speed *s) {
+    s->x += v->x;
+    s->y += v->y;
+  };
+  auto same_component_system = [&] (Velocity *v) {
+    v->x += 10;
+    v->y += 10;
+  };
+  registry.register_system<Velocity, Speed>(speed_system);
+  registry.attach_component(entity, (Speed){9, 3, 4});
+  registry.attach_component(entity, (Velocity){1, 5});
+  registry.tick();
+  Speed speed_result = registry.get_component<Speed>(entity).value();
+  REQUIRE(speed_result.x == 10);
+  REQUIRE(speed_result.y == 8);
+  REQUIRE(speed_result.z == 4);
+  Velocity velocity_result = registry.get_component<Velocity>(entity).value();
+  REQUIRE(velocity_result.x == 1);
+  REQUIRE(velocity_result.y == 5);
+  registry.register_system<Velocity>(same_component_system);
+  registry.tick();
+  speed_result = registry.get_component<Speed>(entity).value();
+  REQUIRE(speed_result.x == 11);
+  REQUIRE(speed_result.y == 13);
+  REQUIRE(speed_result.z == 4);
+  velocity_result = registry.get_component<Velocity>(entity).value();
+  REQUIRE(velocity_result.x == 11);
+  REQUIRE(velocity_result.y == 15);
+}
+
+TEST_CASE("Multiple Systems multiple entities", "[multiple_systems_multiple_entities]") {
+  WorldRegistry registry { 10 };
+  registry.register_component<Velocity>();
+  registry.register_component<Speed>();
+  EntityId entity = registry.create_entity<Velocity, Speed>();
+  EntityId entity2 = registry.create_entity<Velocity>();
+  auto speed_system = [&] (Velocity *v, Speed *s) {
+    s->x += v->x;
+    s->y += v->y;
+  };
+  auto same_component_system = [&] (Velocity *v) {
+    v->x += 10;
+    v->y += 10;
+  };
+  registry.register_system<Velocity, Speed>(speed_system);
+  registry.attach_component(entity, (Speed){9, 3, 4});
+  registry.attach_component(entity, (Velocity){1, 5});
+  registry.attach_component(entity2, (Velocity){9, 15});
+  registry.tick();
+  Speed speed_result = registry.get_component<Speed>(entity).value();
+  REQUIRE(speed_result.x == 10);
+  REQUIRE(speed_result.y == 8);
+  REQUIRE(speed_result.z == 4);
+  Velocity velocity_result = registry.get_component<Velocity>(entity).value();
+  REQUIRE(velocity_result.x == 1);
+  REQUIRE(velocity_result.y == 5);
+  registry.register_system<Velocity>(same_component_system);
+  registry.tick();
+  speed_result = registry.get_component<Speed>(entity).value();
+  REQUIRE(speed_result.x == 11);
+  REQUIRE(speed_result.y == 13);
+  REQUIRE(speed_result.z == 4);
+  velocity_result = registry.get_component<Velocity>(entity).value();
+  REQUIRE(velocity_result.x == 11);
+  REQUIRE(velocity_result.y == 15);
+  Velocity velocity_result2 = registry.get_component<Velocity>(entity2).value();
+  REQUIRE(velocity_result2.x == 19);
+  REQUIRE(velocity_result2.y == 25);
 }

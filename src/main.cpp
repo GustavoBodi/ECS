@@ -19,7 +19,7 @@ int main() {
     s.x += v.x;
     s.y += v.y;
   };
-  registry.register_system<Velocity, Speed>(speed_system);
+  //registry.register_system<Velocity, Speed>(speed_system);
   for (int i = 0; i < 100000; ++i) {
     EntityId entity = registry.create_entity<Velocity, Speed>();
     registry.attach_component(entity, (Velocity){10 * i, 2 * i});
