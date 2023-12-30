@@ -169,17 +169,17 @@ class WorldRegistry {
     /*! @brief Maps a component id with its size */
     std::unordered_map<ComponentId, std::size_t> component_size_index;
     /*! @brief Relation between a system id and a system */
-    std::unordered_map<SystemId, std::shared_ptr<SystemBase>> system_index;
+    std::unordered_map<SystemId, SystemBase*> system_index;
     /*! @brief List of disabled systems */
     std::unordered_set<SystemId> disabled_systems_index;
     /*! @brief Relationship between a list of components and the archetypes */
     std::unordered_map<ArchetypeId, archetype_t> archetype_index;
+    /*! @brief All the registered components and their depth in the graph */
+    std::unordered_map<depth_t, std::tuple<archetype_t, dependencies_t>> depth_index;
     /*! @brief An archetype id list */
     TypeMapper<ArchetypeId> archetype_ids;
     /*! @brief Root archetype of the graph */
     archetype_t root { new Archetype {0, std::vector<ComponentId>()} };
-    /*! @brief All the registered components and their depth in the graph */
-    std::unordered_map<depth_t, std::tuple<archetype_t, dependencies_t>> depth_index;
     /*! @brief The controller for the graph operations */
     //GraphController graph {root};
     /*!

@@ -18,7 +18,7 @@ public:
   ComponentId gen_component_id() { component++; return component; }
 
   /*! @brief Returns a new system id */
-  SystemId gen_system_id() { component++; return component; }
+  SystemId gen_system_id() { system++; return system; }
 
   /*! @brief Returns a new entity id */
   EntityId gen_entity_id() { entity++; return entity; }

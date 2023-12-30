@@ -4,6 +4,7 @@
 #include "Types.hpp"
 #include <cstdint>
 #include <functional>
+#include <iostream>
 
 /*! @brief System base class, represents a pointer to an instance of a system */
 class SystemBase {
