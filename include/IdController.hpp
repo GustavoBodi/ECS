@@ -1,4 +1,6 @@
+#pragma once
 #include "Types.hpp"
+#include "TypeMapper.hpp"
 
 /*!
  * @brief The class that generates the ids for the program, exists for 
@@ -24,6 +26,30 @@ public:
   /*! @brief Returns a new archetype id */
   ArchetypeId gen_archetype_id() { archetype++; return archetype; }
 
+  /*! @brief Returns the id associated with the component type */
+  template <typename Component>
+  ComponentId get_component_id() { return component_index.find<Component>()->second; }
+
+  /*! @brief Inserts a component in the type mapper */
+  template <typename Component>
+  void insert_component_id() { component_index.put<Component>(gen_component_id()); }
+
+  /*! @brief Returns the amount of components in the component mapper */
+  std::size_t get_component_amount() { return component_index.size(); }
+
+  /*!
+   * @brief Creates an archetype signature from template parameters
+   * @tparam Components The components that represent the archetype
+   */
+  template <typename ...Components>
+  std::vector<ComponentId> make_archetype_signature() {
+    std::vector<ComponentId> archetype_signature {};
+    ([&] {
+            archetype_signature.push_back(get_component_id<Components>());
+         } (), ...);
+    return archetype_signature;
+  }
+  
 private:
   /*! @brief The current entity id in the controller */
   EntityId entity { 0 };
@@ -33,4 +59,6 @@ private:
   SystemId system { 0 };
   /*! @brief The current archetype id in the controller */
   ArchetypeId archetype { 0 };
+  /*! @brief Maps a component type with its id */
+  TypeMapper<ComponentId> component_index;
 };

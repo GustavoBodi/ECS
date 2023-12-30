@@ -1,5 +1,6 @@
 #pragma once
 #include "Archetype.hpp"
+#include "IdController.hpp"
 #include "Types.hpp"
 #include <cstdint>
 #include <functional>
@@ -8,7 +9,11 @@
 class SystemBase {
 public:
   /*! @brief Default constructor */
-  SystemBase(SystemId system_id, uint64_t tick): id{system_id}, every_x_tick{tick} {};
+  SystemBase(SystemId system_id, uint64_t tick,
+             std::unordered_map<ComponentId, std::shared_ptr<ArchetypeMap>>
+                 &component_archetype_mapping, IdController &id_controller)
+      : id{system_id}, every_x_tick{tick},
+        component_archetype_mapping{component_archetype_mapping}, ids{id_controller} {};
 
   /*! @brief Runs the system */
   virtual void run() = 0;
@@ -51,6 +56,10 @@ protected:
   uint64_t every_x_tick;
   /* @brief List of observed archetypes by the system */
   std::vector<archetype_t> archetype_list {};
+  /* @brief Reference to the mapping used to find the component columns in archetypes */
+  std::unordered_map<ComponentId, std::shared_ptr<ArchetypeMap>> &component_archetype_mapping;
+  /* @brief The id controller (used for getting the component ids) */
+  IdController &ids;
 };
 
 /*! @brief Abstract class that represents a system, should be extended to represent an atomic operation */
@@ -58,20 +67,32 @@ template <typename ...Components>
 class System : public SystemBase {
 public:
   /*! @brief Default constructor */
-  System(SystemId system_id, std::function<void(Components...)> function,
-         uint64_t tick)
-      : SystemBase{system_id, tick}, system_fn{function} {};
+  System(SystemId system_id, std::function<void(Components&...)> function,
+         uint64_t tick,
+         std::unordered_map<ComponentId, std::shared_ptr<ArchetypeMap>>
+             &component_archetype_mapping,
+         IdController &id_controller)
+      : SystemBase{system_id, tick, component_archetype_mapping, id_controller},
+        system_fn{function} {};
 
   /*! @brief Default destructor */
   ~System() {};
 
+  /*! @brief Runs an instance of system */
   void run() {
     for (archetype_t archetype: archetype_list) {
-      //system_fn(params...);
+      std::tuple<std::vector<Components>*...> dependency_list;
+      ([&] {
+              //auto components = std::get<std::vector<Components>>(dependency_list);
+              std::shared_ptr<ArchetypeMap> archetype_map { component_archetype_mapping[ids.get_component_id<Components>()] };
+              ArchetypeRecord a_record { (*archetype_map)[archetype->get_id()] };
+              //components = (*archetype)[a_record].get_vector<Components>();
+           } (), ...);
+      //std::apply(system_fn, );
     }
   }
 
 private:
   /*! @brief Function that represents the system inner working */
-  std::function<void(Components...)> system_fn;
+  std::function<void(Components&...)> system_fn;
 };

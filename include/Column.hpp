@@ -23,6 +23,16 @@ class Column {
       return (*array)[index];
     }
 
+    template <typename T>
+    T *get_vector() {
+      T (*array)[max_amount] = (T(*)[max_amount]) elements.get();
+      return *array;
+    }
+
+    std::size_t size() {
+      return count;
+    }
+
     /*!
      * @brief Overload of the indexing operator for selecting a line (Archetype)
      * @param index Return the value from the buffer of components
@@ -67,9 +77,9 @@ class Column {
     /*! @brief Number of elements */
     std::size_t count { 0 };
     /*! @brief Max amount of elements in the array */
-    std::size_t max_amount { 100000 };
+    static constexpr std::size_t max_amount { 100000 };
     /*! @brief Buffer with the components */
-    std::shared_ptr<uint8_t[]> elements {new uint8_t [max_amount * element_size]};
+    std::unique_ptr<uint8_t[]> elements {new uint8_t [max_amount * element_size]};
     /*! @brief the type of component in the column */
     ComponentId type;
 };

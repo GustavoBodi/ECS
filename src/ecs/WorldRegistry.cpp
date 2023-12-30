@@ -4,7 +4,7 @@
 #include <algorithm>
 
 WorldRegistry::WorldRegistry(uint64_t cycle_reset)
-    : entity_index(), component_index(), system_index(), archetype_index(), cycle_reset{cycle_reset}
+    : entity_index(), system_index(), archetype_index(), cycle_reset{cycle_reset}
 {}
 
 void WorldRegistry::delete_entity(EntityId entity) {
@@ -40,7 +40,7 @@ void WorldRegistry::tick() {
 }
 
 std::size_t WorldRegistry::count_components() {
-  return component_index.size();
+  return ids.get_component_amount();
 }
 
 archetype_t WorldRegistry::add_node(archetype_t archetype) {

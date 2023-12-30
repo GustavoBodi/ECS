@@ -15,7 +15,7 @@ int main() {
   WorldRegistry registry { 10 };
   registry.register_component<Velocity>();
   registry.register_component<Speed>();
-  auto speed_system = [] (Velocity v, Speed s) {
+  auto speed_system = [] (Velocity &v, Speed &s) {
     s.x += v.x;
     s.y += v.y;
   };
