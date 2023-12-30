@@ -63,7 +63,6 @@ public:
   const std::size_t column_value(ComponentId component) const {
     auto result = std::find(type.begin(), type.end(), component);
     if (result == type.end()) {
-      std::cout << "here2" << std::endl;
       throw std::exception();
     }
     auto index = std::distance(type.begin(), result);
