@@ -2,7 +2,6 @@
 #include "Archetype.hpp"
 #include "Types.hpp"
 #include <algorithm>
-#include <iostream>
 
 WorldRegistry::WorldRegistry(uint64_t cycle_reset)
     : entity_index(), system_index(), archetype_index(), cycle_reset{cycle_reset}

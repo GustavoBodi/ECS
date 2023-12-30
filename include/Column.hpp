@@ -24,6 +24,7 @@ class Column {
       return (*array)[index];
     }
 
+    /*! @brief Return the span of the current occupied column */
     template <typename T>
     std::tuple<std::span<T>, std::size_t> get_vector() {
       T (*array)[max_amount] = (T(*)[max_amount]) elements.get();
@@ -31,6 +32,7 @@ class Column {
       return std::make_tuple(managed_list, count);
     }
 
+    /*! @brief Return the current size of the column */
     std::size_t size() {
       return count;
     }
@@ -58,6 +60,11 @@ class Column {
       return count - 1;
     }
 
+    /*!
+     * @brief Inserts value in the column
+     * @param component Pointer to the component be inserted
+     * @param index Index of the component in the column
+     */
     std::size_t insert(void *component, std::size_t index) {
       memcpy(&elements.get()[index * element_size], component, element_size);
       count++;
