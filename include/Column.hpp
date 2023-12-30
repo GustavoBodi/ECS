@@ -52,8 +52,10 @@ public:
    */
   template <typename Component>
   std::size_t insert(Component component, std::size_t index) {
-    if ( count == max_amount )
+    if ( count == max_amount ) {
+      std::cout << "here3" << std::endl;
       throw std::exception();
+    }
     Component (*array)[max_amount] = (Component(*)[max_amount]) (elements.get());
     (*array)[index] = component;
     count++;

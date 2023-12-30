@@ -147,6 +147,9 @@ archetype_t WorldRegistry::register_archetype(std::vector<ComponentId> &componen
   //archetype_ids.put<T...>(arch_id);
   archetype_t new_archetype { new Archetype(arch_id, components) };
   archetype_index[arch_id] = new_archetype;
+  for (auto system: system_index) {
+    system.second->add_archetype(new_archetype);
+  }
   add_node(new_archetype);
   create_component_archetype_mapping(new_archetype);
   create_archetype_columns(new_archetype);

@@ -13,9 +13,9 @@ public:
   /*! @brief Default constructor */
   SystemBase(SystemId system_id, uint64_t tick,
              std::unordered_map<ComponentId, std::shared_ptr<ArchetypeMap>>
-                 &component_archetype_mapping, IdController &id_controller)
+                 &component_archetype_mapping, IdController &id_controller, std::vector<ComponentId> signature)
       : id{system_id}, every_x_tick{tick},
-        component_archetype_mapping{component_archetype_mapping}, ids{id_controller} {};
+        component_archetype_mapping{component_archetype_mapping}, ids{id_controller}, signature{signature} {};
 
   /*! @brief Runs the system */
   virtual void run() = 0;
@@ -27,7 +27,14 @@ public:
   uint64_t get_tick() { return every_x_tick; }
 
   /*! @brief Adds archetype to the system */
-  void add_archetype(archetype_t archetype) { archetype_list.insert(archetype); }
+  void add_archetype(archetype_t archetype) {
+    auto signature_arch = archetype->get_type();
+    std::sort(signature_arch.begin(), signature_arch.end());
+    std::sort(signature.begin(), signature.end());
+    if (std::includes(signature_arch.begin(), signature_arch.end(), signature.begin(), signature.end())) {
+      archetype_list.insert(archetype); 
+    }
+  }
 
   /* @brief Removes archetype from the system */
   void remove_archetype(archetype_t archetype) {
@@ -62,6 +69,8 @@ protected:
   std::unordered_map<ComponentId, std::shared_ptr<ArchetypeMap>> &component_archetype_mapping;
   /* @brief The id controller (used for getting the component ids) */
   IdController &ids;
+  /* @brief Internal system signature */
+  std::vector<ComponentId> signature;
 };
 
 /*! @brief Abstract class that represents a system, should be extended to represent an atomic operation */
@@ -73,8 +82,8 @@ public:
          uint64_t tick,
          std::unordered_map<ComponentId, std::shared_ptr<ArchetypeMap>>
              &component_archetype_mapping,
-         IdController &id_controller)
-      : SystemBase{system_id, tick, component_archetype_mapping, id_controller},
+         IdController &id_controller, std::vector<ComponentId> signature)
+      : SystemBase{system_id, tick, component_archetype_mapping, id_controller, signature},
         system_fn{function} {};
 
   /*! @brief Default destructor */
@@ -88,7 +97,14 @@ public:
       ([&] {
               std::shared_ptr<ArchetypeMap> archetype_map { component_archetype_mapping[ids.get_component_id<Components>()] };
               ArchetypeRecord a_record { (*archetype_map)[archetype->get_id()] };
-              dependency_list[i] = (*archetype)[a_record].get_vector<Components>();
+              if (archetype_map->count(archetype->get_id()) == 0) {
+                return;
+              }
+              try {
+                dependency_list[i] = (*archetype)[a_record].get_vector<Components>();
+              } catch (std::exception e) {
+                return;
+              }
               ++i;
               } (), ...);
       std::size_t iter = dependency_list[0].second;

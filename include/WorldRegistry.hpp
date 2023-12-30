@@ -230,8 +230,10 @@ template <typename ...T, typename Func>
 const SystemId WorldRegistry::register_system(Func system) {
   std::function<void(T*...)> wrapped_function { system };
   SystemBase *sys_class = sys.create_system<T...>(ids.gen_system_id(), wrapped_function);
-  if (sys_class == nullptr)
+  if (sys_class == nullptr) {
+    std::cout << "here" << std::endl;
     throw std::exception();
+  }
   system_index[sys_class->get_id()] = sys_class;
   return sys_class->get_id();
 }
@@ -284,6 +286,7 @@ archetype_t WorldRegistry::add_component(EntityId entity) {
   archetype_t new_archetype;
   auto indexed_archetype = current_archetype->get_edges()[component];
   if (indexed_archetype == nullptr) {
+    std::cout << "Registering new archetype" << std::endl;
     new_archetype = register_archetype(new_signature);
   } else {
     new_archetype = std::get<archetype_t>(indexed_archetype->add);
